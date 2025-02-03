@@ -138,7 +138,6 @@ class _HomeViewState extends State<HomeView> {
                                       .pushNamed(Routes.rentalStatus);
                                 },
                                 child: Container(
-                                  padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(8),
@@ -146,11 +145,14 @@ class _HomeViewState extends State<HomeView> {
                                       color: Colors.grey[300]!,
                                     ),
                                   ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
+                                  child: Theme(
+                                    data: Theme.of(context).copyWith(
+                                      dividerColor: Colors.transparent,
+                                    ),
+                                    child: ExpansionTile(
+                                      tilePadding: const EdgeInsets.symmetric(
+                                          horizontal: 16.0),
+                                      title: Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,
                                         children: [
@@ -161,51 +163,82 @@ class _HomeViewState extends State<HomeView> {
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                          IconButton(
-                                            icon: const Icon(Icons.refresh),
-                                            onPressed: () {
-                                              viewModel.refreshRemainingTime();
-                                            },
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              IconButton(
+                                                icon: const Icon(Icons.refresh),
+                                                onPressed: () {
+                                                  viewModel
+                                                      .refreshRemainingTime();
+                                                },
+                                              ),
+                                              // const Icon(Icons.chevron_right,
+                                              //     color: Colors.grey),
+                                            ],
                                           ),
                                         ],
                                       ),
-                                      if (viewModel.activeRentals.isEmpty)
-                                        const Padding(
-                                          padding: EdgeInsets.symmetric(
-                                            vertical: 16.0,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            left: 16.0,
+                                            right: 16.0,
+                                            bottom: 16.0,
                                           ),
-                                          child: Text('현재 대여 중인 물품이 없습니다.'),
-                                        )
-                                      else
-                                        ...viewModel.activeRentals.map(
-                                          (rental) => Padding(
-                                            padding: const EdgeInsets.only(
-                                              top: 16.0,
-                                            ),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  rental.accessoryName,
-                                                  style: const TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w500,
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              if (viewModel
+                                                  .activeRentals.isEmpty)
+                                                const Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                    vertical: 16.0,
+                                                  ),
+                                                  child: Text(
+                                                      '현재 대여 중인 물품이 없습니다.'),
+                                                )
+                                              else
+                                                ...viewModel.activeRentals.map(
+                                                  (rental) => Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                      top: 16.0,
+                                                    ),
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          rental.accessoryName,
+                                                          style:
+                                                              const TextStyle(
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 4),
+                                                        Text(
+                                                          '남은 시간: ${rental.remainingTime.inHours}시간 ${rental.remainingTime.inMinutes % 60}분',
+                                                          style: TextStyle(
+                                                            fontSize: 14,
+                                                            color: Colors
+                                                                .grey[600],
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  '남은 시간: ${rental.remainingTime.inHours}시간 ${rental.remainingTime.inMinutes % 60}분',
-                                                  style: TextStyle(
-                                                    fontSize: 14,
-                                                    color: Colors.grey[600],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
+                                            ],
                                           ),
                                         ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
