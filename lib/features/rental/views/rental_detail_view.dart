@@ -6,6 +6,7 @@ import '../../../data/models/accessory.dart';
 import '../../../data/models/station.dart';
 import '../../../app/routes.dart';
 import '../../../data/repositories/station_repository.dart';
+import 'dart:math'; // 임시 데이터 생성용
 
 class RentalDetailView extends StatefulWidget {
   final Accessory accessory;
@@ -25,11 +26,14 @@ class _RentalDetailViewState extends State<RentalDetailView> {
   final _storageService = StorageService.instance;
   Station? _selectedStation;
   int _selectedHours = 1;
+  late final int _quantity; // 악세사리 수량
 
   @override
   void initState() {
     super.initState();
     _selectedStation = widget.station;
+    // 임시 데이터: 0~5개 랜덤 생성
+    _quantity = Random().nextInt(6);
 
     // 초기 대여 시간 쿠키 생성
     _storageService.setInt('selected_rental_duration', _selectedHours);
@@ -119,14 +123,39 @@ class _RentalDetailViewState extends State<RentalDetailView> {
                             '${widget.accessory.pricePerHour}원/시간',
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
-                          const SizedBox(height: 16),
-                          Text(
-                            widget.accessory.isAvailable ? '대여 가능' : '대여 불가',
-                            style: TextStyle(
-                              color: widget.accessory.isAvailable
-                                  ? Theme.of(context).primaryColor
-                                  : Colors.grey,
-                            ),
+                          const SizedBox(height: 24),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: _selectedStation == null
+                                      ? Colors.grey[200]
+                                      : _quantity > 0
+                                          ? Theme.of(context)
+                                              .primaryColor
+                                              .withOpacity(0.1)
+                                          : Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  _selectedStation == null
+                                      ? '스테이션 선택 후 수량 확인'
+                                      : '남은 수량: $_quantity개',
+                                  style: TextStyle(
+                                    color: _selectedStation == null
+                                        ? Colors.grey[600]
+                                        : _quantity > 0
+                                            ? Theme.of(context).primaryColor
+                                            : Colors.grey[600],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 24),
                           Text(
@@ -202,7 +231,7 @@ class _RentalDetailViewState extends State<RentalDetailView> {
                                         divisions: 23,
                                         label: '$_selectedHours시간',
                                         onChanged: (value) {
-                                setState(() {
+                                          setState(() {
                                             _selectedHours = value.toInt();
                                           });
                                           // 시간 변경 시 쿠키 업데이트
@@ -389,7 +418,7 @@ class _RentalDetailViewState extends State<RentalDetailView> {
                   ),
                   const SizedBox(height: 8),
                   ElevatedButton(
-                    onPressed: _selectedStation == null
+                    onPressed: (_selectedStation == null || _quantity == 0)
                         ? null
                         : () async {
                             // 쿠키에 정보 저장
@@ -432,7 +461,11 @@ class _RentalDetailViewState extends State<RentalDetailView> {
                             }
                           },
                     child: Text(
-                      _selectedStation == null ? '스테이션을 선택해주세요' : 'QR 스캔하기',
+                      _selectedStation == null
+                          ? '스테이션을 선택해주세요'
+                          : _quantity == 0
+                              ? '현재 대여 불가능'
+                              : 'QR 스캔하기',
                     ),
                   ),
                 ],
