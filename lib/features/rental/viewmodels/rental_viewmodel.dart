@@ -32,25 +32,9 @@ class RentalViewModel extends ChangeNotifier {
   }
 
   Future<void> _init() async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      await Future.wait([
-        _loadAccessories(),
-        _loadStations(),
-      ]);
-
-      // 저장된 스테이션과 액세서리 정보 불러오기
-      _selectedStation = await _storageService.getSelectedStation();
-      _selectedAccessory = await _storageService.getSelectedAccessory();
-    } catch (e) {
-      _error = e.toString();
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
+    await refresh();
+    // 초기 카테고리를 첫 번째 카테고리로 설정
+    selectCategory(AccessoryCategory.values.first.toString());
   }
 
   Future<void> selectStation(Station station) async {
@@ -102,11 +86,7 @@ class RentalViewModel extends ChangeNotifier {
   }
 
   void selectCategory(String category) {
-    if (_selectedCategory == category) {
-      _selectedCategory = null;
-    } else {
-      _selectedCategory = category;
-    }
+    _selectedCategory = category;
     notifyListeners();
   }
 
@@ -116,6 +96,24 @@ class RentalViewModel extends ChangeNotifier {
   }
 
   Future<void> refresh() async {
-    await _init();
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await Future.wait([
+        _loadAccessories(),
+        _loadStations(),
+      ]);
+
+      // 저장된 스테이션과 액세서리 정보 불러오기
+      _selectedStation = await _storageService.getSelectedStation();
+      _selectedAccessory = await _storageService.getSelectedAccessory();
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 }

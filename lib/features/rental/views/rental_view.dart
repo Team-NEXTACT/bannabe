@@ -102,14 +102,15 @@ class _RentalContent extends StatelessWidget {
                                       vertical: 12,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.grey[200],
-                                      borderRadius: BorderRadius.circular(8),
+                                      color: const Color(0xFFFFBE00)
+                                          .withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Row(
                                       children: [
                                         Icon(
                                           Icons.search,
-                                          color: Colors.grey[600],
+                                          color: Theme.of(context).primaryColor,
                                           size: 20,
                                         ),
                                         const SizedBox(width: 8),
@@ -129,42 +130,33 @@ class _RentalContent extends StatelessWidget {
                                     ),
                                   ),
                                   const SizedBox(height: 16),
-                                  SizedBox(
-                                    height: 40,
-                                    child: ListView(
+                                  Container(
+                                    height: 45,
+                                    width: double.infinity,
+                                    decoration: const BoxDecoration(
+                                      border: Border(
+                                        bottom: BorderSide(
+                                          color: Color(0xFFE0E0E0),
+                                          width: 1,
+                                        ),
+                                      ),
+                                    ),
+                                    child: SingleChildScrollView(
                                       scrollDirection: Axis.horizontal,
-                                      children: AccessoryCategory.values
-                                          .map(
-                                            (category) => Padding(
-                                              padding: const EdgeInsets.only(
-                                                  right: 8.0),
-                                              child: ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: viewModel
-                                                              .selectedCategory ==
-                                                          category.toString()
-                                                      ? AppColors.primary
-                                                      : Colors.grey[200],
-                                                  foregroundColor: viewModel
-                                                              .selectedCategory ==
-                                                          category.toString()
-                                                      ? Colors.white
-                                                      : Colors.black,
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                    horizontal: 16,
-                                                  ),
-                                                ),
-                                                onPressed: () =>
-                                                    viewModel.selectCategory(
-                                                        category.toString()),
-                                                child: Text(
+                                      child: Row(
+                                        children: AccessoryCategory.values
+                                            .map(
+                                              (category) => IntrinsicWidth(
+                                                child: _buildCategoryTab(
+                                                  context,
                                                   _getCategoryName(category),
+                                                  category.toString(),
+                                                  viewModel,
                                                 ),
                                               ),
-                                            ),
-                                          )
-                                          .toList(),
+                                            )
+                                            .toList(),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -200,85 +192,74 @@ class _RentalContent extends StatelessWidget {
                                         ),
                                       );
                                     },
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(
-                                          color: Colors.grey[300]!,
-                                        ),
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: [
-                                          Stack(
-                                            children: [
-                                              AspectRatio(
-                                                aspectRatio: 1,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: [
+                                        Stack(
+                                          children: [
+                                            AspectRatio(
+                                              aspectRatio: 1,
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.grey[100],
+                                                ),
+                                                child: Image.asset(
+                                                  accessory.imageUrl.isNotEmpty
+                                                      ? accessory.imageUrl
+                                                      : 'assets/images/bannabe.png',
+                                                  fit: BoxFit.contain,
+                                                  errorBuilder: (context, error,
+                                                      stackTrace) {
+                                                    return Image.asset(
+                                                      'assets/images/bannabe.png',
+                                                      fit: BoxFit.contain,
+                                                    );
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                            if (quantity == 0)
+                                              Positioned.fill(
                                                 child: Container(
                                                   decoration: BoxDecoration(
-                                                    color: Colors.grey[100],
-                                                    borderRadius:
-                                                        const BorderRadius
-                                                            .vertical(
-                                                      top: Radius.circular(8),
-                                                    ),
+                                                    color: Colors.black
+                                                        .withOpacity(0.5),
                                                   ),
-                                                  child: Image.asset(
-                                                    accessory.imageUrl,
-                                                    fit: BoxFit.contain,
+                                                  child: const Center(
+                                                    child: Text(
+                                                      '재고 없음',
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
                                                   ),
                                                 ),
                                               ),
-                                              if (quantity == 0)
-                                                Positioned.fill(
-                                                  child: Container(
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.black
-                                                          .withOpacity(0.5),
-                                                      borderRadius:
-                                                          const BorderRadius
-                                                              .vertical(
-                                                        top: Radius.circular(8),
-                                                      ),
-                                                    ),
-                                                    child: const Center(
-                                                      child: Text(
-                                                        '품절',
-                                                        style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
+                                          ],
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(8),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                accessory.name,
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w400,
                                                 ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
                                             ],
                                           ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  accessory.name,
-                                                  style: const TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
                                   );
                                 },
@@ -298,6 +279,39 @@ class _RentalContent extends StatelessWidget {
         ),
         const AppBottomNavigationBar(currentIndex: 1),
       ],
+    );
+  }
+
+  Widget _buildCategoryTab(
+    BuildContext context,
+    String label,
+    String value,
+    RentalViewModel viewModel,
+  ) {
+    final isSelected = viewModel.selectedCategory == value;
+    return InkWell(
+      onTap: () => viewModel.selectCategory(value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: isSelected ? const Color(0xFFFFBE00) : Colors.transparent,
+              width: 2,
+            ),
+          ),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              color: isSelected ? Colors.black : Colors.grey[600],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
