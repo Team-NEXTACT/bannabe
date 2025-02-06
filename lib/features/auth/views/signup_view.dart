@@ -16,18 +16,16 @@ class _SignupViewState extends State<SignupView> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
   bool _isLoading = false;
   String? _error;
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _nameController.dispose();
-    _phoneController.dispose();
     super.dispose();
   }
 
@@ -35,14 +33,28 @@ class _SignupViewState extends State<SignupView> {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
-    final name = _nameController.text.trim();
-    final phone = _phoneController.text.trim();
 
-    if (email.isEmpty ||
-        password.isEmpty ||
-        confirmPassword.isEmpty ||
-        name.isEmpty ||
-        phone.isEmpty) {
+    // 이메일 형식 검사
+    final emailRegExp = RegExp(r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$');
+    if (!emailRegExp.hasMatch(email)) {
+      setState(() {
+        _error = '올바른 이메일 형식이 아닙니다.';
+      });
+      return;
+    }
+
+    // 비밀번호 형식 검사
+    final passwordRegExp = RegExp(
+      r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,20}$',
+    );
+    if (!passwordRegExp.hasMatch(password)) {
+      setState(() {
+        _error = '비밀번호는 영문, 숫자, 특수문자를 포함한 8~20자리여야 합니다.';
+      });
+      return;
+    }
+
+    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
       setState(() {
         _error = '모든 필드를 입력해주세요.';
       });
@@ -62,18 +74,27 @@ class _SignupViewState extends State<SignupView> {
     });
 
     try {
-      await AuthService.instance.signUp(
-        email: email,
-        password: password,
-        name: name,
-        phoneNumber: phone,
-      );
+      // TODO: 서버 연동 시 아래 코드로 대체
+      // final response = await AuthService.instance.signUp(
+      //   email: email,
+      //   password: password,
+      // );
+
+      // 임시 시나리오: 이메일에 'test'가 포함되어 있으면 중복으로 처리
+      await Future.delayed(const Duration(seconds: 1));
+      if (email.contains('test')) {
+        throw Exception('중복된 이메일입니다.');
+      }
+
       if (mounted) {
         Navigator.of(context).pushReplacementNamed(Routes.signupComplete);
       }
     } catch (e) {
       setState(() {
-        _error = e.toString();
+        // 서버 응답의 message 필드를 사용하거나, 기본 에러 메시지 표시
+        _error = e.toString().contains('중복된 이메일')
+            ? '중복된 이메일입니다.'
+            : '회원가입 중 오류가 발생했습니다.';
       });
     } finally {
       if (mounted) {
@@ -104,12 +125,28 @@ class _SignupViewState extends State<SignupView> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 48),
+              const Text(
+                '이메일',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
               TextField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
+                style: const TextStyle(fontSize: 16),
                 decoration: InputDecoration(
-                  hintText: '이메일',
+                  hintText: 'bannabee@email.com',
+                  hintStyle: TextStyle(
+                    color: Colors.grey[400],
+                    fontSize: 16,
+                  ),
                   contentPadding: const EdgeInsets.all(16),
+                  filled: true,
+                  fillColor: Colors.grey[50],
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: const BorderSide(color: AppColors.lightGrey),
@@ -118,15 +155,44 @@ class _SignupViewState extends State<SignupView> {
                     borderRadius: BorderRadius.circular(8),
                     borderSide: const BorderSide(color: AppColors.lightGrey),
                   ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                      width: 2,
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
+              const Text(
+                '비밀번호',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
               TextField(
                 controller: _passwordController,
-                obscureText: true,
+                obscureText: !_isPasswordVisible,
+                style: const TextStyle(fontSize: 16),
                 decoration: InputDecoration(
-                  hintText: '비밀번호',
+                  hintText: '8자 이상의 비밀번호',
+                  hintStyle: TextStyle(
+                    color: Colors.grey[400],
+                    fontSize: 16,
+                  ),
+                  helperText: '✓ 8~20자 이내  ✓ 대소문자,숫자,특수문자 포함',
+                  helperStyle: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                    height: 1.5,
+                  ),
                   contentPadding: const EdgeInsets.all(16),
+                  filled: true,
+                  fillColor: Colors.grey[50],
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: const BorderSide(color: AppColors.lightGrey),
@@ -135,15 +201,57 @@ class _SignupViewState extends State<SignupView> {
                     borderRadius: BorderRadius.circular(8),
                     borderSide: const BorderSide(color: AppColors.lightGrey),
                   ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                      width: 2,
+                    ),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isPasswordVisible
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: Colors.grey[600],
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      });
+                    },
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
+              const Text(
+                '비밀번호 확인',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
               TextField(
                 controller: _confirmPasswordController,
-                obscureText: true,
+                obscureText: !_isConfirmPasswordVisible,
+                style: const TextStyle(fontSize: 16),
                 decoration: InputDecoration(
-                  hintText: '비밀번호 확인',
+                  hintText: '8자 이상의 비밀번호',
+                  hintStyle: TextStyle(
+                    color: Colors.grey[400],
+                    fontSize: 16,
+                  ),
+                  helperText: '✓ 비밀번호 일치',
+                  helperStyle: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                    height: 1.5,
+                  ),
                   contentPadding: const EdgeInsets.all(16),
+                  filled: true,
+                  fillColor: Colors.grey[50],
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: const BorderSide(color: AppColors.lightGrey),
@@ -152,58 +260,78 @@ class _SignupViewState extends State<SignupView> {
                     borderRadius: BorderRadius.circular(8),
                     borderSide: const BorderSide(color: AppColors.lightGrey),
                   ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  hintText: '이름',
-                  contentPadding: const EdgeInsets.all(16),
-                  border: OutlineInputBorder(
+                  focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.lightGrey),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                      width: 2,
+                    ),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.lightGrey),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
-                  hintText: '휴대폰 번호',
-                  contentPadding: const EdgeInsets.all(16),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.lightGrey),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.lightGrey),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _isConfirmPasswordVisible
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: Colors.grey[600],
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                      });
+                    },
                   ),
                 ),
               ),
               if (_error != null) ...[
                 const SizedBox(height: 16),
-                Text(
-                  _error!,
-                  style: AppTheme.bodyMedium.copyWith(
-                    color: AppColors.error,
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  textAlign: TextAlign.center,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        color: AppColors.error,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _error!,
+                          style: TextStyle(
+                            color: AppColors.error,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
               const SizedBox(height: 32),
               if (_isLoading)
                 const HoneyLoadingAnimation(isStationSelected: false)
               else
-                ElevatedButton(
-                  onPressed: _signup,
-                  child: const Text('회원가입'),
+                SizedBox(
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: _signup,
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      '회원가입',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                 ),
             ],
           ),
