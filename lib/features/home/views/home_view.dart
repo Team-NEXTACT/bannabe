@@ -137,81 +137,78 @@ class _HomeViewState extends State<HomeView> {
                                   Navigator.of(context)
                                       .pushNamed(Routes.rentalStatus);
                                 },
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: Colors.grey[300]!,
-                                    ),
+                                child: Theme(
+                                  data: Theme.of(context).copyWith(
+                                    dividerColor: Colors.transparent,
                                   ),
-                                  child: Theme(
-                                    data: Theme.of(context).copyWith(
-                                      dividerColor: Colors.transparent,
-                                    ),
-                                    child: ExpansionTile(
-                                      tilePadding: const EdgeInsets.symmetric(
-                                          horizontal: 16.0),
-                                      title: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          const Text(
-                                            '현재 대여 중',
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              IconButton(
-                                                icon: const Icon(Icons.refresh),
-                                                onPressed: () {
-                                                  viewModel
-                                                      .refreshRemainingTime();
-                                                },
-                                              ),
-                                              // const Icon(Icons.chevron_right,
-                                              //     color: Colors.grey),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
+                                  child: ExpansionTile(
+                                    tilePadding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0),
+                                    title: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                            left: 16.0,
-                                            right: 16.0,
-                                            bottom: 16.0,
-                                          ),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              if (viewModel
-                                                  .activeRentals.isEmpty)
-                                                const Padding(
-                                                  padding: EdgeInsets.symmetric(
-                                                    vertical: 16.0,
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text(
+                                              '현재 대여 중',
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(Icons.refresh),
+                                              onPressed: () {
+                                                viewModel
+                                                    .refreshRemainingTime();
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    children: [
+                                      Container(
+                                        height: 1,
+                                        width: double.infinity,
+                                        margin: const EdgeInsets.only(top: 4),
+                                        color: Colors.black,
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 16.0,
+                                          right: 16.0,
+                                          bottom: 16.0,
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            if (viewModel.activeRentals.isEmpty)
+                                              const Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                  vertical: 16.0,
+                                                ),
+                                                child:
+                                                    Text('현재 대여 중인 물품이 없습니다.'),
+                                              )
+                                            else
+                                              ...viewModel.activeRentals.map(
+                                                (rental) => Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                    top: 16.0,
                                                   ),
-                                                  child: Text(
-                                                      '현재 대여 중인 물품이 없습니다.'),
-                                                )
-                                              else
-                                                ...viewModel.activeRentals.map(
-                                                  (rental) => Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                      top: 16.0,
-                                                    ),
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text(
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      Expanded(
+                                                        child: Text(
                                                           rental.accessoryName,
                                                           style:
                                                               const TextStyle(
@@ -220,25 +217,63 @@ class _HomeViewState extends State<HomeView> {
                                                                 FontWeight.w500,
                                                           ),
                                                         ),
-                                                        const SizedBox(
-                                                            height: 4),
-                                                        Text(
-                                                          '남은 시간: ${rental.remainingTime.inHours}시간 ${rental.remainingTime.inMinutes % 60}분',
-                                                          style: TextStyle(
-                                                            fontSize: 14,
-                                                            color: Colors
-                                                                .grey[600],
+                                                      ),
+                                                      const SizedBox(width: 16),
+                                                      Row(
+                                                        children: [
+                                                          Text(
+                                                            '${rental.remainingTime.inMinutes}',
+                                                            textAlign:
+                                                                TextAlign.right,
+                                                            style:
+                                                                const TextStyle(
+                                                              fontSize: 18,
+                                                              color: Color(
+                                                                  0xFFFFBE00),
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                            ),
                                                           ),
-                                                        ),
-                                                      ],
-                                                    ),
+                                                          const Text(
+                                                            '분',
+                                                            textAlign:
+                                                                TextAlign.right,
+                                                            style: TextStyle(
+                                                                fontSize: 14,
+                                                                color: Colors
+                                                                    .black),
+                                                          ),
+                                                          Text(
+                                                            '/ ${rental.totalRentalTime.inMinutes}',
+                                                            textAlign:
+                                                                TextAlign.right,
+                                                            style:
+                                                                const TextStyle(
+                                                                    fontSize:
+                                                                        18,
+                                                                    color: Colors
+                                                                        .black),
+                                                          ),
+                                                          const Text(
+                                                            '분',
+                                                            textAlign:
+                                                                TextAlign.right,
+                                                            style: TextStyle(
+                                                                fontSize: 14,
+                                                                color: Colors
+                                                                    .black),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
                                                   ),
                                                 ),
-                                            ],
-                                          ),
+                                              ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -250,14 +285,6 @@ class _HomeViewState extends State<HomeView> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    '최근 대여 내역',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
                                   if (viewModel.recentRentals.isEmpty)
                                     const Padding(
                                       padding:
@@ -288,12 +315,9 @@ class _HomeViewState extends State<HomeView> {
                                                   : 0,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: Colors.white,
+                                              color: const Color(0xFFFFBE00),
                                               borderRadius:
-                                                  BorderRadius.circular(8),
-                                              border: Border.all(
-                                                color: Colors.grey[300]!,
-                                              ),
+                                                  BorderRadius.circular(10),
                                             ),
                                             child: Column(
                                               crossAxisAlignment:
@@ -312,6 +336,53 @@ class _HomeViewState extends State<HomeView> {
                                                           MainAxisAlignment
                                                               .center,
                                                       children: [
+                                                        Row(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceBetween,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            const Text(
+                                                              '최근 이용 내역',
+                                                              style: TextStyle(
+                                                                fontSize: 16,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                                color: Colors
+                                                                    .black,
+                                                              ),
+                                                            ),
+                                                            Row(
+                                                              children: [
+                                                                const Icon(
+                                                                  Icons
+                                                                      .location_on,
+                                                                  size: 16,
+                                                                  color: Colors
+                                                                      .black,
+                                                                ),
+                                                                const SizedBox(
+                                                                    width: 4),
+                                                                Text(
+                                                                  rental
+                                                                      .stationName,
+                                                                  style:
+                                                                      const TextStyle(
+                                                                    fontSize:
+                                                                        14,
+                                                                    color: Colors
+                                                                        .black,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 16),
                                                         Text(
                                                           rental.accessoryName,
                                                           style:
@@ -324,75 +395,54 @@ class _HomeViewState extends State<HomeView> {
                                                           overflow: TextOverflow
                                                               .ellipsis,
                                                         ),
-                                                        const SizedBox(
-                                                            height: 8),
-                                                        Text(
-                                                          rental.stationName,
-                                                          style: TextStyle(
-                                                            fontSize: 14,
-                                                            color: Colors
-                                                                .grey[600],
-                                                          ),
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                        ),
-                                                        const SizedBox(
-                                                            height: 8),
-                                                        Text(
-                                                          rental
-                                                              .formattedRentalTime,
-                                                          style: TextStyle(
-                                                            fontSize: 14,
-                                                            color: Colors
-                                                                .grey[600],
-                                                          ),
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                        ),
                                                       ],
                                                     ),
                                                   ),
                                                 ),
-                                                Container(
-                                                  width: double.infinity,
-                                                  decoration: BoxDecoration(
-                                                    border: Border(
-                                                      top: BorderSide(
-                                                        color:
-                                                            Colors.grey[300]!,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  child: Material(
-                                                    color: Colors.transparent,
-                                                    child: InkWell(
-                                                      onTap: () async {
-                                                        await _saveRentalInfo(
-                                                            rental);
-                                                        if (context.mounted) {
-                                                          Navigator.of(context)
-                                                              .pushNamed(
-                                                            Routes.rentalDetail,
-                                                            arguments: {
-                                                              'accessory':
-                                                                  await _getAccessoryFromRental(
-                                                                      rental),
-                                                            },
-                                                          );
-                                                        }
-                                                      },
-                                                      child: const Padding(
-                                                        padding: EdgeInsets.all(
-                                                            16.0),
-                                                        child: Text(
-                                                          '대여하기',
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                          style: TextStyle(
-                                                            color: AppColors
-                                                                .primary,
+                                                Align(
+                                                  alignment: Alignment.center,
+                                                  child: Container(
+                                                    width:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .width *
+                                                            0.56,
+                                                    height: 45,
+                                                    margin:
+                                                        const EdgeInsets.only(
+                                                            bottom: 16),
+                                                    color: Colors.white,
+                                                    child: Material(
+                                                      color: Colors.transparent,
+                                                      child: InkWell(
+                                                        onTap: () async {
+                                                          await _saveRentalInfo(
+                                                              rental);
+                                                          if (context.mounted) {
+                                                            Navigator.of(
+                                                                    context)
+                                                                .pushNamed(
+                                                              Routes
+                                                                  .rentalDetail,
+                                                              arguments: {
+                                                                'accessory':
+                                                                    await _getAccessoryFromRental(
+                                                                        rental),
+                                                              },
+                                                            );
+                                                          }
+                                                        },
+                                                        child: const Center(
+                                                          child: Text(
+                                                            '대여하기',
+                                                            style: TextStyle(
+                                                              color:
+                                                                  Colors.black,
+                                                              fontSize: 14,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                            ),
                                                           ),
                                                         ),
                                                       ),
@@ -416,14 +466,6 @@ class _HomeViewState extends State<HomeView> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    '주변 스테이션',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
                                   AspectRatio(
                                     aspectRatio: 2,
                                     child: InkWell(
@@ -437,11 +479,22 @@ class _HomeViewState extends State<HomeView> {
                                           },
                                         );
                                       },
-                                      child: MapView(
-                                        isPreview: true,
-                                        initialPosition:
-                                            viewModel.currentLocation,
-                                        stations: viewModel.nearbyStations,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: Colors.black,
+                                              width: 1,
+                                            ),
+                                          ),
+                                          child: MapView(
+                                            isPreview: true,
+                                            initialPosition:
+                                                viewModel.currentLocation,
+                                            stations: viewModel.nearbyStations,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -472,22 +525,20 @@ class _HomeViewState extends State<HomeView> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.black,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.grey[300]!),
         ),
         child: Row(
           children: [
-            const Icon(
-              Icons.info_outline,
-              color: AppColors.primary,
-              size: 20,
+            const Text(
+              '공지사항 | ',
+              style: TextStyle(fontSize: 14, color: Colors.white),
             ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 viewModel.latestNotice?.title ?? '새로운 공지사항이 없습니다.',
-                style: const TextStyle(fontSize: 14),
+                style: const TextStyle(fontSize: 14, color: Colors.white),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),

@@ -67,6 +67,12 @@ class Rental {
     return rentalDuration - elapsedTime;
   }
 
+  Duration get totalRentalTime {
+    // 시간당 1000원으로 계산
+    final hours = totalPrice ~/ 1000;
+    return Duration(hours: hours);
+  }
+
   String get formattedRentalTime {
     // 시간당 가격으로 대여 시간 계산
     final hours = totalPrice ~/ 1000;
