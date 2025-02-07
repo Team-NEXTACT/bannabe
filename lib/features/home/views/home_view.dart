@@ -315,7 +315,8 @@ class _HomeViewState extends State<HomeView> {
                                                   : 0,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFFFBE00),
+                                              color: const Color(0xFFFFBE00)
+                                                  .withValues(alpha: 0.6),
                                               borderRadius:
                                                   BorderRadius.circular(10),
                                             ),
