@@ -114,6 +114,12 @@ class _RentalDetailViewState extends State<RentalDetailView> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          const SizedBox(height: 8),
+                          Text(
+                            widget.accessory.category.name,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          const SizedBox(height: 8),
                           Text(
                             widget.accessory.name,
                             style: Theme.of(context).textTheme.headlineSmall,
@@ -122,6 +128,11 @@ class _RentalDetailViewState extends State<RentalDetailView> {
                           Text(
                             '${widget.accessory.pricePerHour}원/시간',
                             style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            widget.accessory.description,
+                            style: Theme.of(context).textTheme.bodyMedium,
                           ),
                           const SizedBox(height: 24),
                           Row(
@@ -156,182 +167,6 @@ class _RentalDetailViewState extends State<RentalDetailView> {
                                 ),
                               ),
                             ],
-                          ),
-                          const SizedBox(height: 24),
-                          Text(
-                            '대여 시간',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: Colors.grey[300]!,
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      '선택된 시간',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleSmall,
-                                    ),
-                                    Text(
-                                      '$_selectedHours시간',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .titleSmall
-                                          ?.copyWith(
-                                            color:
-                                                Theme.of(context).primaryColor,
-                                          ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    IconButton(
-                                      onPressed: _selectedHours > 1
-                                          ? () {
-                                              setState(() {
-                                                _selectedHours--;
-                                              });
-                                              // 시간 변경 시 쿠키 업데이트
-                                              _storageService.setInt(
-                                                'selected_rental_duration',
-                                                _selectedHours,
-                                              );
-                                              _storageService.setInt(
-                                                'selected_price',
-                                                widget.accessory.pricePerHour *
-                                                    _selectedHours,
-                                              );
-                                            }
-                                          : null,
-                                      icon: const Icon(
-                                          Icons.remove_circle_outline),
-                                    ),
-                                    Expanded(
-                                      child: Slider(
-                                        value: _selectedHours.toDouble(),
-                                        min: 1,
-                                        max: 24,
-                                        divisions: 23,
-                                        label: '$_selectedHours시간',
-                                        onChanged: (value) {
-                                          setState(() {
-                                            _selectedHours = value.toInt();
-                                          });
-                                          // 시간 변경 시 쿠키 업데이트
-                                          _storageService.setInt(
-                                            'selected_rental_duration',
-                                            _selectedHours,
-                                          );
-                                          _storageService.setInt(
-                                            'selected_price',
-                                            widget.accessory.pricePerHour *
-                                                _selectedHours,
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                    IconButton(
-                                      onPressed: _selectedHours < 24
-                                          ? () {
-                                              setState(() {
-                                                _selectedHours++;
-                                              });
-                                              // 시간 변경 시 쿠키 업데이트
-                                              _storageService.setInt(
-                                                'selected_rental_duration',
-                                                _selectedHours,
-                                              );
-                                              _storageService.setInt(
-                                                'selected_price',
-                                                widget.accessory.pricePerHour *
-                                                    _selectedHours,
-                                              );
-                                            }
-                                          : null,
-                                      icon:
-                                          const Icon(Icons.add_circle_outline),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      '시간당 가격',
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                    Text(
-                                      '${widget.accessory.pricePerHour}원',
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      '총 대여 시간',
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                    Text(
-                                      '$_selectedHours시간',
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                const Divider(),
-                                const SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text(
-                                      '총 결제 금액',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      '${widget.accessory.pricePerHour * _selectedHours}원',
-                                      style: TextStyle(
-                                        color: Theme.of(context).primaryColor,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
                           ),
                           const SizedBox(height: 24),
                           Text(
@@ -408,15 +243,6 @@ class _RentalDetailViewState extends State<RentalDetailView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    '총 결제 금액: ${widget.accessory.pricePerHour * _selectedHours}원',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Theme.of(context).primaryColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                    textAlign: TextAlign.right,
-                  ),
-                  const SizedBox(height: 8),
                   ElevatedButton(
                     onPressed: (_selectedStation == null || _quantity == 0)
                         ? null
