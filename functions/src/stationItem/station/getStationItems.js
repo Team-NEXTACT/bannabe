@@ -1,20 +1,68 @@
 const functions = require('firebase-functions');
 const { db } = require('../../utils/db');
 
+// 충전소 아이템 조회
 exports.getStationItems = functions.https.onRequest(async (req, res) => {
   if (req.method !== 'GET') {
-    return res.status(405).json({ message: '허용되지 않는 메소드입니다.' });
+    return res.status(405).json({
+      success: false,
+      message: '허용되지 않는 메소드입니다.'
+    });
   }
 
   try {
-    const { stationId } = req.params;
-    const { category, status, page = 1, limit = 10 } = req.query;
+    const { stationId, itemTypeId } = req.params;
 
     // 스테이션 존재 여부 확인
-    const stationRef = await db.collection('stations').doc(stationId).get();
-    if (!stationRef.exists) {
-      return res.status(404).json({ message: '존재하지 않는 스테이션입니다.' });
+    const stationDoc = await db.collection('stations')
+      .doc(stationId)
+      .get();
+
+    if (!stationDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: '존재하지 않는 스테이션입니다.'
+      });
     }
+
+    // itemTypeId가 있는 경우 상세 정보 조회
+    if (itemTypeId) {
+      // 물품 타입 정보 조회
+      const itemTypeDoc = await db.collection('item_types')
+        .doc(itemTypeId)
+        .get();
+
+      if (!itemTypeDoc.exists || itemTypeDoc.data().stationId !== stationId) {
+        return res.status(404).json({
+          success: false,
+          message: '존재하지 않는 대여물품입니다.'
+        });
+      }
+
+      // 재고 수량 계산 (available 상태인 물품 수)
+      const availableItemsSnapshot = await db.collection('rental_items')
+        .where('itemTypeId', '==', itemTypeId)
+        .where('stationId', '==', stationId)
+        .where('status', '==', 'available')
+        .get();
+
+      const itemData = itemTypeDoc.data();
+      
+      return res.status(200).json({
+        success: true,
+        data: {
+          name: itemData.name,
+          image: itemData.imageUrl,
+          category: itemData.category,
+          description: itemData.description,
+          price: itemData.price,
+          stock: availableItemsSnapshot.size
+        }
+      });
+    }
+
+    // itemTypeId가 없는 경우 기존의 스테이션 아이템 목록 조회 로직
+    const { category, status, page = 1, limit = 10 } = req.query;
 
     // 기본 쿼리 설정
     let itemsQuery = db.collection('rental_items')
@@ -86,21 +134,24 @@ exports.getStationItems = functions.https.onRequest(async (req, res) => {
       });
     }
 
-    // 응답 데이터 구성
-    const response = {
-      items,
-      pagination: {
-        currentPage: parseInt(page),
-        totalPages: Math.ceil(totalItems / limit),
-        totalItems,
-        itemsPerPage: parseInt(limit)
-      },
-      categoryStats: Object.keys(categoryStats).length > 0 ? categoryStats : undefined
-    };
-
-    res.status(200).json(response);
+    return res.status(200).json({
+      success: true,
+      data: {
+        items,
+        pagination: {
+          currentPage: parseInt(page),
+          totalPages: Math.ceil(totalItems / limit),
+          totalItems,
+          itemsPerPage: parseInt(limit)
+        },
+        categoryStats: Object.keys(categoryStats).length > 0 ? categoryStats : undefined
+      }
+    });
   } catch (error) {
     console.error('Get station items error:', error);
-    res.status(500).json({ message: '서버 오류가 발생했습니다.' });
+    return res.status(500).json({
+      success: false,
+      message: '서버 오류가 발생했습니다.'
+    });
   }
 });
