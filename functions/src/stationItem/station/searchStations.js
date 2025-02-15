@@ -26,7 +26,7 @@ exports.searchStations = functions.https.onRequest(async (req, res) => {
     }
 
     // stations 컬렉션에서 전체 데이터 조회
-    const stationsSnapshot = await db.collection('stations')
+    const stationsSnapshot = await db.collection('rentalStations')
       .orderBy('name')
       .get();
 

@@ -16,11 +16,11 @@ exports.deleteBookmarkedStation = functions.https.onRequest(async (req, res) => 
 
   await authenticateToken(req, res, async () => {
     try {
-      const userId = req.user.uid;
-      const stationId = req.params.stationId;
+      const userId = req.user.email;  // email을 userId로 사용
+      const stationId = req.params.stationId;  // URL path에서 stationId 추출
 
-      // bookmark_stations에서 해당 북마크 찾기
-      const bookmarkRef = await db.collection('bookmark_stations')
+      // bookmarks에서 해당 북마크 찾기
+      const bookmarkRef = await db.collection('bookmarks')
         .where('userId', '==', userId)
         .where('stationId', '==', stationId)
         .get();

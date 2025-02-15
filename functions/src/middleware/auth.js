@@ -23,10 +23,8 @@ exports.authenticateToken = async (req, res, next) => {
       
       // 검증된 사용자 정보를 req 객체에 저장
       req.user = {
-        uid: decodedToken.uid,
         email: decodedToken.email,
-        // 필요한 경우 추가 claims 정보도 저장
-        role: decodedToken.role
+        membership: decodedToken.membership || false // membership 정보 추가 (없으면 false)
       };
 
       // 다음 미들웨어로 진행

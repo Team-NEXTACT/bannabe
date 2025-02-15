@@ -26,17 +26,17 @@ exports.updateProfileImage = functions.https.onRequest(async (req, res) => {
   await authenticateToken(req, res, async () => {
     try {
       const { imageUrl } = req.body;
-      const userId = req.user.uid;
+      const userId = req.user.email;
 
       // 현재 사용자 정보 조회
       const userRef = await db.collection('users').doc(userId).get();
       const userData = userRef.data();
 
       // 기존 이미지가 기본 이미지가 아닌 경우 S3에서 삭제
-      if (userData.profile_image && 
-          userData.profile_image !== 'default_profile_url' &&
-          userData.profile_image.includes('amazonaws.com')) {
-        const oldImageKey = userData.profile_image.split('/').pop();
+      if (userData.profileImage && 
+          userData.profileImage !== 'default_profile_url' &&
+          userData.profileImage.includes('amazonaws.com')) {
+        const oldImageKey = userData.profileImage.split('/').pop();
         await s3.deleteObject({
           Bucket: functions.config().aws.bucket_name,
           Key: oldImageKey
@@ -45,7 +45,7 @@ exports.updateProfileImage = functions.https.onRequest(async (req, res) => {
 
       // 프로필 이미지 URL 업데이트
       await db.collection('users').doc(userId).update({
-        profile_image: imageUrl
+        profileImage: imageUrl
       });
 
       return res.status(200).json({
@@ -77,9 +77,8 @@ exports.getPresignedUrl = functions.https.onRequest(async (req, res) => {
 
   await authenticateToken(req, res, async () => {
     try {
-      const userEmail = req.user.email;
       const fileExtension = req.query.fileType.split('/')[1];
-      const fileName = `${userEmail}_${Date.now()}.${fileExtension}`;
+      const fileName = `${req.user.email}_${Date.now()}.${fileExtension}`;
 
       const presignedUrl = await s3.getSignedUrlPromise('putObject', {
         Bucket: functions.config().aws.bucket_name,
