@@ -1,8 +1,8 @@
 const functions = require('firebase-functions');
-const { db } = require('../../utils/db');
-const { generateOrderId } = require('../../utils/payment');
-const { PG_API_KEY } = require('../../config/payment');
-const { authenticateToken } = require('../../middleware/auth');
+const {db} = require('../../utils/db');
+const {generateOrderId} = require('../../utils/payment');
+const {PG_API_KEY} = require('../../config/payment');
+const {authenticateToken} = require('../../middleware/auth');
 const admin = require('../../utils/admin');
 
 /**
@@ -15,13 +15,13 @@ exports.initializeExtendPayment = functions.https.onRequest(async (req, res) => 
   return authenticateToken(req, res, async () => {
     try {
       const userId = req.user.email;
-      const { rentalHistoryToken, extendTime } = req.body;
+      const {rentalHistoryToken, extendTime} = req.body;
 
       // 요청 데이터 검증
       if (!rentalHistoryToken || !extendTime) {
         return res.status(400).json({
           success: false,
-          message: '필수 파라미터가 누락되었습니다.'
+          message: '필수 파라미터가 누락되었습니다.',
         });
       }
 
@@ -33,7 +33,7 @@ exports.initializeExtendPayment = functions.https.onRequest(async (req, res) => 
       if (!rentalHistoryDoc.exists) {
         return res.status(404).json({
           success: false,
-          message: '대여 기록을 찾을 수 없습니다.'
+          message: '대여 기록을 찾을 수 없습니다.',
         });
       }
 
@@ -43,7 +43,7 @@ exports.initializeExtendPayment = functions.https.onRequest(async (req, res) => 
       if (rentalHistory.status !== 'Rented') {
         return res.status(400).json({
           success: false,
-          message: '대여 중인 상태에서만 연장이 가능합니다.'
+          message: '대여 중인 상태에서만 연장이 가능합니다.',
         });
       }
 
@@ -53,7 +53,7 @@ exports.initializeExtendPayment = functions.https.onRequest(async (req, res) => 
         .get();
 
       const itemTypeData = itemTypeDoc.data();
-      
+
       // 연장 금액 계산 (연장 시간 * 시간당 가격)
       const amount = extendTime * itemTypeData.price;
 
@@ -63,20 +63,19 @@ exports.initializeExtendPayment = functions.https.onRequest(async (req, res) => 
       return res.status(200).json({
         success: true,
         data: {
-          apiKey: PG_API_KEY,                    // PG사 API 키
-          orderId: orderId,                      // 주문 고유 ID
+          apiKey: PG_API_KEY, // PG사 API 키
+          orderId: orderId, // 주문 고유 ID
           orderName: `${itemTypeData.name} 연장`, // 물품 이름 + 연장
-          extendTime: `${extendTime}시간`,        // 연장 시간
-          currency: 'KRW',                       // 화폐 단위
-          amount: amount                         // 계산된 연장 금액
-        }
+          extendTime: `${extendTime}시간`, // 연장 시간
+          currency: 'KRW', // 화폐 단위
+          amount: amount, // 계산된 연장 금액
+        },
       });
-
     } catch (error) {
       console.error('Initialize extend payment error:', error);
       return res.status(500).json({
         success: false,
-        message: '서버 오류가 발생했습니다.'
+        message: '서버 오류가 발생했습니다.',
       });
     }
   });

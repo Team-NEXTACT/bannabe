@@ -19,5 +19,5 @@ module.exports = {
   rental_station_items: rentalStationItemSchema,
   rental_payments: rentalPaymentSchema,
   rental_history: rentalHistorySchema,
-  notices: noticeSchema
-}; 
+  notices: noticeSchema,
+};

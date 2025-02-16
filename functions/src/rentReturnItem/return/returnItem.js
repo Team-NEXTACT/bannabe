@@ -1,6 +1,6 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-const { authenticateToken } = require('../../middleware/auth');
+const {authenticateToken} = require('../../middleware/auth');
 
 const db = admin.firestore();
 
@@ -8,8 +8,8 @@ const db = admin.firestore();
 exports.returnRentalItem = functions.https.onRequest(async (req, res) => {
   await authenticateToken(req, res, async () => {
     try {
-      const { rentalItemId } = req.params;
-      const { stationId } = req.body;
+      const {rentalItemId} = req.params;
+      const {stationId} = req.body;
 
       // 현재 대여 기록 조회
       const rentalHistoryRef = await db.collection('rentalHistory')
@@ -19,8 +19,8 @@ exports.returnRentalItem = functions.https.onRequest(async (req, res) => {
         .get();
 
       if (rentalHistoryRef.empty) {
-        return res.status(404).json({ 
-          error: '대여 기록을 찾을 수 없습니다.' 
+        return res.status(404).json({
+          error: '대여 기록을 찾을 수 없습니다.',
         });
       }
 
@@ -29,8 +29,8 @@ exports.returnRentalItem = functions.https.onRequest(async (req, res) => {
 
       // 반납 가능 상태 확인
       if (currentStatus !== 'Rented' && currentStatus !== 'OverDue_Paid') {
-        return res.status(400).json({ 
-          error: '현재 상태에서는 반납이 불가능합니다.' 
+        return res.status(400).json({
+          error: '현재 상태에서는 반납이 불가능합니다.',
         });
       }
 
@@ -44,26 +44,25 @@ exports.returnRentalItem = functions.https.onRequest(async (req, res) => {
         transaction.update(rentalHistory.ref, {
           status: 'Returned',
           returnTime: now,
-          rentalTime: usedTime
+          rentalTime: usedTime,
         });
 
         // 대여 물품 상태 업데이트
         const rentalItemRef = db.collection('rentalItems').doc(rentalItemId);
         transaction.update(rentalItemRef, {
           status: 'Available',
-          currentStationId: stationId
+          currentStationId: stationId,
         });
       });
 
-      res.status(200).json({ 
+      res.status(200).json({
         message: '반납이 완료되었습니다.',
-        stationId: stationId
+        stationId: stationId,
       });
-
     } catch (error) {
       console.error('반납 처리 중 오류 발생:', error);
-      res.status(500).json({ 
-        error: '반납 처리 중 오류가 발생했습니다.' 
+      res.status(500).json({
+        error: '반납 처리 중 오류가 발생했습니다.',
       });
     }
   });

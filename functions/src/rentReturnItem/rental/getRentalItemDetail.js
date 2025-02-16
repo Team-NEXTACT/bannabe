@@ -1,5 +1,5 @@
 const functions = require('firebase-functions');
-const { db } = require('../../utils/db');
+const {db} = require('../../utils/db');
 
 /**
  * 대여물품 데이터 조회
@@ -10,22 +10,22 @@ exports.getRentalItemDetail = functions.https.onRequest(async (req, res) => {
   if (req.method !== 'GET') {
     return res.status(405).json({
       success: false,
-      message: '허용되지 않는 메소드입니다.'
+      message: '허용되지 않는 메소드입니다.',
     });
   }
 
   try {
-    const { rentalItemToken } = req.params;
+    const {rentalItemToken} = req.params;
 
     // 대여 물품 조회
-    const rentalItemDoc = await db.collection('rental_items')
+    const rentalItemDoc = await db.collection('rentalItems')
       .doc(rentalItemToken)
       .get();
 
     if (!rentalItemDoc.exists) {
       return res.status(404).json({
         success: false,
-        message: '존재하지 않는 물품입니다.'
+        message: '존재하지 않는 물품입니다.',
       });
     }
 
@@ -35,17 +35,17 @@ exports.getRentalItemDetail = functions.https.onRequest(async (req, res) => {
     if (rentalItemData.status !== 'available') {
       return res.status(400).json({
         success: false,
-        message: '현재 대여가 불가능한 물품입니다.'
+        message: '현재 대여가 불가능한 물품입니다.',
       });
     }
 
     // 스테이션 정보 조회
-    const stationDoc = await db.collection('stations')
+    const stationDoc = await db.collection('rentalStations')
       .doc(rentalItemData.stationId)
       .get();
 
     // 물품 타입 정보 조회
-    const itemTypeDoc = await db.collection('item_types')
+    const itemTypeDoc = await db.collection('rentalItemTypes')
       .doc(rentalItemData.itemTypeId)
       .get();
 
@@ -58,15 +58,14 @@ exports.getRentalItemDetail = functions.https.onRequest(async (req, res) => {
         description: itemTypeData.description,
         image: itemTypeData.imageUrl,
         price: itemTypeData.price,
-        currentStationName: stationDoc.data().name
-      }
+        currentStationName: stationDoc.data().name,
+      },
     });
-
   } catch (error) {
     console.error('Get rental item detail error:', error);
     return res.status(500).json({
       success: false,
-      message: '서버 오류가 발생했습니다.'
+      message: '서버 오류가 발생했습니다.',
     });
   }
 });

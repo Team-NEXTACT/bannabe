@@ -1,8 +1,8 @@
 const functions = require('firebase-functions');
-const { db } = require('../../utils/db');
-const { approvePayment } = require('../../utils/pgService');
-const { authenticateToken } = require('../../middleware/auth');
-const admin = require('../../utils/admin');
+const {db} = require('../../utils/db');
+const {approvePayment} = require('../../utils/pgService');
+const {authenticateToken} = require('../../middleware/auth');
+// const admin = require('firebase-admin');
 
 /**
  * 연장 결제 승인 및 저장
@@ -12,34 +12,34 @@ const admin = require('../../utils/admin');
 exports.approveRenewalPayment = functions.https.onRequest(async (req, res) => {
   return authenticateToken(req, res, async () => {
     try {
-      const userId = req.user.uid; // 인증된 사용자 ID 사용
-      
+      const userId = req.user.email; // 인증된 사용자 ID 사용
+
       // 사용자의 대여 이력 확인 추가
       const rentalHistoryRef = await db.collection('rentalHistory')
         .where('userId', '==', userId)
         .where('status', '==', 'Rented')
         .get();
-      
+
       if (req.method !== 'POST') {
         return res.status(405).json({
           success: false,
-          message: '허용되지 않는 메소드입니다.'
+          message: '허용되지 않는 메소드입니다.',
         });
       }
 
       // Firestore 트랜잭션 시작
       const transaction = db.runTransaction(async (t) => {
         try {
-          const { 
-            payments: { orderId, paymentKey, amount },
-            rentals: { rentalHistoryToken, renewalTime }
+          const {
+            payments: {orderId, paymentKey, amount},
+            rentals: {rentalHistoryToken, renewalTime},
           } = req.body;
 
           // 요청 데이터 검증
           if (!orderId || !paymentKey || !amount || !rentalHistoryToken || !renewalTime) {
             return res.status(400).json({
               success: false,
-              message: '필수 파라미터가 누락되었습니다.'
+              message: '필수 파라미터가 누락되었습니다.',
             });
           }
 
@@ -61,7 +61,7 @@ exports.approveRenewalPayment = functions.https.onRequest(async (req, res) => {
           const paymentResult = await approvePayment({
             paymentKey,
             orderId,
-            amount
+            amount,
           });
 
           if (!paymentResult.success) {
@@ -71,11 +71,11 @@ exports.approveRenewalPayment = functions.https.onRequest(async (req, res) => {
           // 결제 내역 저장
           const paymentRef = db.collection('rentalPayments').doc();
           t.set(paymentRef, {
-            type: 'credit_card',                                    
-            totalAmount: parseInt(amount),                     
-            paymentDate: paymentResult.approvedAt,            // PG사 결제 승인 시간 사용
-            orderId: orderId,                                 
-            rentalHistoryId: rentalHistoryToken              
+            type: 'credit_card',
+            totalAmount: parseInt(amount),
+            paymentDate: paymentResult.approvedAt, // PG사 결제 승인 시간 사용
+            orderId: orderId,
+            rentalHistoryId: rentalHistoryToken,
           });
 
           // 대여 이력 업데이트
@@ -84,14 +84,14 @@ exports.approveRenewalPayment = functions.https.onRequest(async (req, res) => {
           const newRentalTime = rentalHistory.rentalTime + renewalTime;
 
           t.update(rentalHistoryRef, {
-            endTime: newEndTime,           // 연장된 반납 예정 시간
-            rentalTime: newRentalTime      // 증가된 총 대여 시간
+            endTime: newEndTime, // 연장된 반납 예정 시간
+            rentalTime: newRentalTime, // 증가된 총 대여 시간
           });
 
           return {
             paymentId: paymentRef.id,
             endTime: newEndTime,
-            rentalTime: newRentalTime
+            rentalTime: newRentalTime,
           };
         } catch (error) {
           throw error;
@@ -106,14 +106,14 @@ exports.approveRenewalPayment = functions.https.onRequest(async (req, res) => {
           paymentId: result.paymentId,
           endTime: result.endTime,
           rentalTime: result.rentalTime,
-          message: '연장 결제가 완료되었습니다.'
-        }
+          message: '연장 결제가 완료되었습니다.',
+        },
       });
     } catch (error) {
       console.error('Approve renewal payment error:', error);
       return res.status(500).json({
         success: false,
-        message: error.message || '서버 오류가 발생했습니다.'
+        message: error.message || '서버 오류가 발생했습니다.',
       });
     }
   });

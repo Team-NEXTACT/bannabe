@@ -3,7 +3,7 @@ const rentalItemSchema = {
   price: 'number',
   token: 'string',
   rental_item_type_id: 'string',
-  created_at: 'timestamp'
+  created_at: 'timestamp',
 };
 
-module.exports = rentalItemSchema; 
+module.exports = rentalItemSchema;

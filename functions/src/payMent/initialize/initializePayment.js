@@ -1,8 +1,8 @@
 const functions = require('firebase-functions');
-const { db } = require('../../utils/db');
-const { generateOrderId } = require('../../utils/payment');
-const { PG_API_KEY } = require('../../config/payment');
-const { authenticateToken } = require('../../middleware/auth');
+const {db} = require('../../utils/db');
+const {generateOrderId} = require('../../utils/payment');
+const {PG_API_KEY} = require('../../config/payment');
+const {authenticateToken} = require('../../middleware/auth');
 const admin = require('../../utils/admin');
 
 /**
@@ -16,19 +16,19 @@ exports.initializePayment = functions.https.onRequest(async (req, res) => {
     if (req.method !== 'POST') {
       return res.status(405).json({
         success: false,
-        message: '허용되지 않는 메소드입니다.'
+        message: '허용되지 않는 메소드입니다.',
       });
     }
 
     try {
       const userId = req.user.email; // 인증된 사용자 ID 사용
-      const { rentalItemToken, rentalTime } = req.body;
+      const {rentalItemToken, rentalTime} = req.body;
 
       // 요청 데이터 검증
       if (!rentalItemToken || !rentalTime) {
         return res.status(400).json({
           success: false,
-          message: '필수 파라미터가 누락되었습니다.'
+          message: '필수 파라미터가 누락되었습니다.',
         });
       }
 
@@ -40,7 +40,7 @@ exports.initializePayment = functions.https.onRequest(async (req, res) => {
       if (!rentalItemDoc.exists) {
         return res.status(404).json({
           success: false,
-          message: '존재하지 않는 물품입니다.'
+          message: '존재하지 않는 물품입니다.',
         });
       }
 
@@ -50,7 +50,7 @@ exports.initializePayment = functions.https.onRequest(async (req, res) => {
       if (rentalItemData.status !== 'available') {
         return res.status(400).json({
           success: false,
-          message: '현재 대여가 불가능한 물품입니다.'
+          message: '현재 대여가 불가능한 물품입니다.',
         });
       }
 
@@ -60,7 +60,7 @@ exports.initializePayment = functions.https.onRequest(async (req, res) => {
         .get();
 
       const itemTypeData = itemTypeDoc.data();
-      
+
       // 결제 금액 계산 (시간 * 시간당 가격)
       const amount = rentalTime * itemTypeData.price;
 
@@ -70,17 +70,16 @@ exports.initializePayment = functions.https.onRequest(async (req, res) => {
       return res.status(200).json({
         success: true,
         data: {
-          apiKey: PG_API_KEY,           // PG사 API 키
-          orderId: orderId,             // 주문 고유 ID
+          apiKey: PG_API_KEY, // PG사 API 키
+          orderId: orderId, // 주문 고유 ID
           orderName: itemTypeData.name, // 물품 이름
-          currency: 'KRW',              // 화폐 단위
-          amount: amount                // 계산된 결제 금액
-        }
+          currency: 'KRW', // 화폐 단위
+          amount: amount, // 계산된 결제 금액
+        },
       });
-
     } catch (error) {
       console.error('Initialize payment error:', error);
-      return res.status(500).json({ success: false, message: error.message });
+      return res.status(500).json({success: false, message: error.message});
     }
   });
 });

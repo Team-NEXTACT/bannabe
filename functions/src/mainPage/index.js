@@ -1,5 +1,5 @@
-const { getLatestNotices } = require('./getLatestNotices');
+const {getLatestNotices} = require('./getLatestNotices');
 
 module.exports = {
-  getLatestNotices
-}; 
+  getLatestNotices,
+};

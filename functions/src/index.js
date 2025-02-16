@@ -1,7 +1,8 @@
-const memberFunctions = require("./member");
-const mainPageFunctions = require("./mainPage");
-const stationItemFunctions = require("./stationItem");
-const rentReturnExtensionFunctions = require("./rentReturnExtension");
+const memberFunctions = require('./member');
+const mainPageFunctions = require('./mainPage');
+const stationItemFunctions = require('./stationItem');
+const rentReturnExtensionFunctions = require('./rentReturnExtension');
+const paymentFunctions = require('./payMent');
 
 // Member functions
 exports.register = memberFunctions.register;
@@ -15,13 +16,25 @@ exports.getBookmarkedStations = memberFunctions.getBookmarkedStations;
 exports.deleteBookmarkedStation = memberFunctions.deleteBookmarkedStation;
 
 // MainPage functions will be added here
+exports.getLatestNotices = mainPageFunctions.getLatestNotices;
+
 
 // StationItem functions
 exports.getNearbyStations = stationItemFunctions.getNearbyStations;
 exports.searchStations = stationItemFunctions.searchStations;
 exports.getStationDetail = stationItemFunctions.getStationDetail;
 exports.getStationItems = stationItemFunctions.getStationItems;
-exports.getRecentStations = stationItemFunctions.getRecentStations;
 exports.createBookmark = stationItemFunctions.createBookmark;
 
-// RentReturnExtension functions will be added here 
+// RentReturnExtension functions will be added here
+exports.getRentalItemDetail = rentReturnExtensionFunctions.getRentalItemDetail;
+exports.getReturnItemDetail = rentReturnExtensionFunctions.getReturnItemDetail;
+
+// Payment functions will be added here
+exports.initializePayment = paymentFunctions.initializePayment;
+exports.initializeOverduePayment = paymentFunctions.initializeOverduePayment;
+exports.initializeExtendPayment = paymentFunctions.initializeExtendPayment;
+exports.approveRentalPayment = paymentFunctions.approveRentalPayment;
+exports.approveRenewalPayment = paymentFunctions.approveRenewalPayment;
+exports.approveOverduePayment = paymentFunctions.approveOverduePayment;
+

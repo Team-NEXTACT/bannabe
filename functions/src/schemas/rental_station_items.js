@@ -1,7 +1,7 @@
 const rentalStationItemSchema = {
-  rental_item_type_id: 'string',
-  rental_item_type_name: 'string',
-  stock: 'number'
+  rentalItemTypeId: 'string', // 대여물품 타입 ID
+  rentalStationId: 'string', // 대여스테이션 ID
+  stock: 'number', // 재고
 };
 
-module.exports = rentalStationItemSchema; 
+module.exports = rentalStationItemSchema;

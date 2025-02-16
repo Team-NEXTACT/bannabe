@@ -1,7 +1,7 @@
 const bookmarkSchema = {
-  station_id: 'string',
-  station_name: 'string',
-  added_at: 'timestamp'
+  stationId: 'string', // 스테이션 ID
+  stationName: 'string', // 스테이션 이름
+  addedAt: 'timestamp', // 추가일시
 };
 
-module.exports = bookmarkSchema; 
+module.exports = bookmarkSchema;
