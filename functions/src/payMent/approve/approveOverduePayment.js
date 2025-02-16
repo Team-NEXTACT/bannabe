@@ -12,7 +12,7 @@ const admin = require('../../utils/admin');
 exports.approveOverduePayment = functions.https.onRequest(async (req, res) => {
   return authenticateToken(req, res, async () => {
     try {
-      const userId = req.user.email; // 인증된 사용자 ID 사용
+      const userId = req.user.email;
 
       // 사용자의 연체 이력 확인 추가
       const rentalHistoryRef = await db.collection('rentalHistory')
@@ -29,73 +29,69 @@ exports.approveOverduePayment = functions.https.onRequest(async (req, res) => {
 
       // Firestore 트랜잭션 시작
       const transaction = db.runTransaction(async (t) => {
-        try {
-          const {
-            payments: {orderId, paymentKey, amount},
-            rentals: {rentalItemToken, rentalHistoryToken},
-          } = req.body;
+        const {
+          payments: {orderId, paymentKey, amount},
+          rentals: {rentalItemToken, rentalHistoryToken},
+        } = req.body;
 
-          // 요청 데이터 검증
-          if (!orderId || !paymentKey || !amount || !rentalItemToken || !rentalHistoryToken) {
-            return res.status(400).json({
-              success: false,
-              message: '필수 파라미터가 누락되었습니다.',
-            });
-          }
-
-          // 대여 이력 조회
-          const rentalHistoryDoc = await t.get(rentalHistoryRef);
-
-          if (!rentalHistoryDoc.exists) {
-            throw new Error('존재하지 않는 대여 이력입니다.');
-          }
-
-          const rentalHistory = rentalHistoryDoc.data();
-
-          // 연체 상태 확인 (OverDue 상태만 연체 결제 가능)
-          if (rentalHistory.status !== 'OverDue') {
-            throw new Error('연체 결제가 불가능한 상태입니다.');
-          }
-
-          // PG사 결제 승인 요청
-          const paymentResult = await approvePayment({
-            paymentKey,
-            orderId,
-            amount,
+        // 요청 데이터 검증
+        if (!orderId || !paymentKey || !amount || !rentalItemToken || !rentalHistoryToken) {
+          return res.status(400).json({
+            success: false,
+            message: '필수 파라미터가 누락되었습니다.',
           });
-
-          if (!paymentResult.success) {
-            throw new Error('결제 승인에 실패했습니다.');
-          }
-
-          // 결제 내역 저장
-          const paymentRef = db.collection('rentalPayments').doc();
-          t.set(paymentRef, {
-            type: 'credit_card', // 결제 유형 (연체)
-            totalAmount: parseInt(amount), // 결제 총액
-            paymentDate: admin.firestore.FieldValue.serverTimestamp(), // 결제 일시
-            orderId: orderId, // 주문 ID
-            rentalHistoryId: rentalHistoryToken, // 대여 이력 ID
-          });
-
-          // 대여 이력 상태 업데이트
-          t.update(rentalHistoryRef, {
-            status: 'OverDue_Paid', // 연체 결제 완료 상태로 변경
-          });
-
-          // 대여 물품 상태 업데이트 (선택적)
-          const rentalItemRef = db.collection('rentalItems').doc(rentalItemToken);
-          t.update(rentalItemRef, {
-            status: 'overdue_paid', // 연체 결제 완료 상태로 변경
-          });
-
-          return {
-            paymentId: paymentRef.id,
-            rentalHistoryId: rentalHistoryToken,
-          };
-        } catch (error) {
-          throw error;
         }
+
+        // 대여 이력 조회
+        const rentalHistoryDoc = await t.get(rentalHistoryRef);
+
+        if (!rentalHistoryDoc.exists) {
+          throw new Error('존재하지 않는 대여 이력입니다.');
+        }
+
+        const rentalHistory = rentalHistoryDoc.data();
+
+        // 연체 상태 확인 (OverDue 상태만 연체 결제 가능)
+        if (rentalHistory.status !== 'OverDue') {
+          throw new Error('연체 결제가 불가능한 상태입니다.');
+        }
+
+        // PG사 결제 승인 요청
+        const paymentResult = await approvePayment({
+          paymentKey,
+          orderId,
+          amount,
+        });
+
+        if (!paymentResult.success) {
+          throw new Error('결제 승인에 실패했습니다.');
+        }
+
+        // 결제 내역 저장
+        const paymentRef = db.collection('rentalPayments').doc();
+        t.set(paymentRef, {
+          type: 'credit_card',
+          totalAmount: parseInt(amount),
+          paymentDate: admin.firestore.FieldValue.serverTimestamp(),
+          orderId: orderId,
+          rentalHistoryId: rentalHistoryToken,
+        });
+
+        // 대여 이력 상태 업데이트
+        t.update(rentalHistoryRef, {
+          status: 'OverDue_Paid',
+        });
+
+        // 대여 물품 상태 업데이트
+        const rentalItemRef = db.collection('rentalItems').doc(rentalItemToken);
+        t.update(rentalItemRef, {
+          status: 'overdue_paid',
+        });
+
+        return {
+          paymentId: paymentRef.id,
+          rentalHistoryId: rentalHistoryToken,
+        };
       });
 
       const result = await transaction;

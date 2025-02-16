@@ -12,7 +12,7 @@ const {authenticateToken} = require('../../middleware/auth');
 exports.approveRenewalPayment = functions.https.onRequest(async (req, res) => {
   return authenticateToken(req, res, async () => {
     try {
-      const userId = req.user.email; // 인증된 사용자 ID 사용
+      const userId = req.user.email;
 
       // 사용자의 대여 이력 확인 추가
       const rentalHistoryRef = await db.collection('rentalHistory')
@@ -29,73 +29,69 @@ exports.approveRenewalPayment = functions.https.onRequest(async (req, res) => {
 
       // Firestore 트랜잭션 시작
       const transaction = db.runTransaction(async (t) => {
-        try {
-          const {
-            payments: {orderId, paymentKey, amount},
-            rentals: {rentalHistoryToken, renewalTime},
-          } = req.body;
+        const {
+          payments: {orderId, paymentKey, amount},
+          rentals: {rentalHistoryToken, renewalTime},
+        } = req.body;
 
-          // 요청 데이터 검증
-          if (!orderId || !paymentKey || !amount || !rentalHistoryToken || !renewalTime) {
-            return res.status(400).json({
-              success: false,
-              message: '필수 파라미터가 누락되었습니다.',
-            });
-          }
-
-          // 대여 이력 조회
-          const rentalHistoryDoc = await t.get(rentalHistoryRef);
-
-          if (!rentalHistoryDoc.exists) {
-            throw new Error('존재하지 않는 대여 이력입니다.');
-          }
-
-          const rentalHistory = rentalHistoryDoc.data();
-
-          // 대여 상태 확인 (Rented 상태만 연장 가능)
-          if (rentalHistory.status !== 'Rented') {
-            throw new Error('연장이 불가능한 상태입니다.');
-          }
-
-          // PG사 결제 승인 요청
-          const paymentResult = await approvePayment({
-            paymentKey,
-            orderId,
-            amount,
+        // 요청 데이터 검증
+        if (!orderId || !paymentKey || !amount || !rentalHistoryToken || !renewalTime) {
+          return res.status(400).json({
+            success: false,
+            message: '필수 파라미터가 누락되었습니다.',
           });
-
-          if (!paymentResult.success) {
-            throw new Error('결제 승인에 실패했습니다.');
-          }
-
-          // 결제 내역 저장
-          const paymentRef = db.collection('rentalPayments').doc();
-          t.set(paymentRef, {
-            type: 'credit_card',
-            totalAmount: parseInt(amount),
-            paymentDate: paymentResult.approvedAt, // PG사 결제 승인 시간 사용
-            orderId: orderId,
-            rentalHistoryId: rentalHistoryToken,
-          });
-
-          // 대여 이력 업데이트
-          const currentEndTime = rentalHistory.endTime.toDate();
-          const newEndTime = new Date(currentEndTime.getTime() + (renewalTime * 60 * 60 * 1000));
-          const newRentalTime = rentalHistory.rentalTime + renewalTime;
-
-          t.update(rentalHistoryRef, {
-            endTime: newEndTime, // 연장된 반납 예정 시간
-            rentalTime: newRentalTime, // 증가된 총 대여 시간
-          });
-
-          return {
-            paymentId: paymentRef.id,
-            endTime: newEndTime,
-            rentalTime: newRentalTime,
-          };
-        } catch (error) {
-          throw error;
         }
+
+        // 대여 이력 조회
+        const rentalHistoryDoc = await t.get(rentalHistoryRef);
+
+        if (!rentalHistoryDoc.exists) {
+          throw new Error('존재하지 않는 대여 이력입니다.');
+        }
+
+        const rentalHistory = rentalHistoryDoc.data();
+
+        // 대여 상태 확인 (Rented 상태만 연장 가능)
+        if (rentalHistory.status !== 'Rented') {
+          throw new Error('연장이 불가능한 상태입니다.');
+        }
+
+        // PG사 결제 승인 요청
+        const paymentResult = await approvePayment({
+          paymentKey,
+          orderId,
+          amount,
+        });
+
+        if (!paymentResult.success) {
+          throw new Error('결제 승인에 실패했습니다.');
+        }
+
+        // 결제 내역 저장
+        const paymentRef = db.collection('rentalPayments').doc();
+        t.set(paymentRef, {
+          type: 'credit_card',
+          totalAmount: parseInt(amount),
+          paymentDate: paymentResult.approvedAt,
+          orderId: orderId,
+          rentalHistoryId: rentalHistoryToken,
+        });
+
+        // 대여 이력 업데이트
+        const currentEndTime = rentalHistory.endTime.toDate();
+        const newEndTime = new Date(currentEndTime.getTime() + (renewalTime * 60 * 60 * 1000));
+        const newRentalTime = rentalHistory.rentalTime + renewalTime;
+
+        t.update(rentalHistoryRef, {
+          endTime: newEndTime,
+          rentalTime: newRentalTime,
+        });
+
+        return {
+          paymentId: paymentRef.id,
+          endTime: newEndTime,
+          rentalTime: newRentalTime,
+        };
       });
 
       const result = await transaction;

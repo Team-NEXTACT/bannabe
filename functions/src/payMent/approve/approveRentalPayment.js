@@ -11,7 +11,6 @@ const admin = require('../../utils/admin');
  * Request: PaymentRentalConfirmRequest
  */
 exports.approveRentalPayment = functions.https.onRequest(async (req, res) => {
-  // authenticateToken 미들웨어 적용
   return authenticateToken(req, res, async () => {
     if (req.method !== 'POST') {
       return res.status(405).json({
@@ -23,9 +22,8 @@ exports.approveRentalPayment = functions.https.onRequest(async (req, res) => {
     // 인증된 사용자 ID 사용
     const userId = req.user.email;
 
-    // Firestore 트랜잭션 시작
-    const transaction = db.runTransaction(async (t) => {
-      try {
+    try {
+      const result = await db.runTransaction(async (t) => {
         const {
           payments: {orderId, paymentKey, amount},
           rentals: {rentalItemToken, rentalTime},
@@ -64,15 +62,15 @@ exports.approveRentalPayment = functions.https.onRequest(async (req, res) => {
 
         // 대여 이력 저장 이벤트 발행
         const rentalHistoryData = {
-          userId: userId, // 인증된 사용자 ID
-          status: 'Rented', // 대여 상태
-          startTime: admin.firestore.FieldValue.serverTimestamp(), // 대여 시작 시간
-          endTime: new Date(Date.now() + (rentalTime * 60 * 60 * 1000)), // 반납 예정 시간
-          returnTime: null, // 실제 반납 시간 (대여시에는 null)
-          rentalTime: rentalTime, // 대여 시간 (시간 단위)
-          rentalItemId: rentalItemToken, // 대여 물품 ID
-          rentalStationId: rentalItemDoc.data().stationId, // 대여 스테이션 ID
-          returnStationId: null, // 반납 스테이션 ID (대여시에는 null)
+          userId: userId,
+          status: 'Rented',
+          startTime: admin.firestore.FieldValue.serverTimestamp(),
+          endTime: new Date(Date.now() + (rentalTime * 60 * 60 * 1000)),
+          returnTime: null,
+          rentalTime: rentalTime,
+          rentalItemId: rentalItemToken,
+          rentalStationId: rentalItemDoc.data().stationId,
+          returnStationId: null,
         };
 
         await publishEvent('RentalHistorySave', rentalHistoryData, {
@@ -83,11 +81,11 @@ exports.approveRentalPayment = functions.https.onRequest(async (req, res) => {
         // 결제 내역 저장
         const paymentRef = db.collection('rentalPayments').doc();
         t.set(paymentRef, {
-          type: 'credit_card', // 결제 유형 (대여)
-          totalAmount: parseInt(amount), // 결제 총액
-          paymentDate: admin.firestore.FieldValue.serverTimestamp(), // 결제 일시
-          orderId: orderId, // 주문 ID
-          rentalHistoryId: rentalHistoryData.rentalItemId, // 대여 이력 ID
+          type: 'credit_card',
+          totalAmount: parseInt(amount),
+          paymentDate: admin.firestore.FieldValue.serverTimestamp(),
+          orderId: orderId,
+          rentalHistoryId: rentalHistoryData.rentalItemId,
         });
 
         // 물품 상태 업데이트
@@ -99,13 +97,7 @@ exports.approveRentalPayment = functions.https.onRequest(async (req, res) => {
           paymentId: paymentRef.id,
           rentalHistoryData,
         };
-      } catch (error) {
-        throw error;
-      }
-    });
-
-    try {
-      const result = await transaction;
+      });
 
       return res.status(200).json({
         success: true,
