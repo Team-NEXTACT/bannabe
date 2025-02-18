@@ -1,44 +1,36 @@
 import 'package:flutter/foundation.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../../data/models/rental.dart';
-import '../../../data/repositories/rental_repository.dart';
 import '../../../data/repositories/accessory_repository.dart';
-import '../../../core/services/storage_service.dart';
 import '../../../data/repositories/station_repository.dart';
+import '../../../core/services/storage_service.dart';
 
-class QRScanViewModel with ChangeNotifier {
+class QRScanViewModel extends ChangeNotifier {
   final AccessoryRepository _accessoryRepository;
   final StorageService _storageService;
   final int _rentalDuration;
   final bool isReturn;
-  final Rental? initialRental;
-
-  bool _isScanning = true;
+  final dynamic initialRental;
   bool _isProcessing = false;
   bool _hasCameraPermission = false;
   String? _error;
   Rental? _rental;
   bool _isReturnComplete = false;
   int _rating = 0;
-  QRViewController? _controller;
   final _stationRepository = StationRepository.instance;
 
   QRScanViewModel({
-    RentalRepository? rentalRepository,
     AccessoryRepository? accessoryRepository,
     StorageService? storageService,
     required int rentalDuration,
-    this.isReturn = false,
+    required this.isReturn,
     this.initialRental,
   })  : _accessoryRepository = accessoryRepository ?? AccessoryRepository(),
         _storageService = storageService ?? StorageService.instance,
         _rentalDuration = rentalDuration {
     _checkCameraPermission();
-    _saveRentalDuration();
   }
 
-  bool get isScanning => _isScanning;
   bool get isProcessing => _isProcessing;
   bool get hasCameraPermission => _hasCameraPermission;
   String? get error => _error;
@@ -46,61 +38,35 @@ class QRScanViewModel with ChangeNotifier {
   bool get isReturnComplete => _isReturnComplete;
   int get rating => _rating;
 
-  Future<void> _saveRentalDuration() async {
-    if (!isReturn) {
-      await _storageService.setInt('rental_duration', _rentalDuration);
-    }
-  }
-
   Future<void> _checkCameraPermission() async {
     final status = await Permission.camera.status;
     if (status.isGranted) {
       _hasCameraPermission = true;
-      _isScanning = true;
       notifyListeners();
       return;
     }
 
     final result = await Permission.camera.request();
     _hasCameraPermission = result.isGranted;
-    _isScanning = result.isGranted;
-    if (!result.isGranted) {
-      _error = '카메라 권한이 필요합니다. 설정에서 권한을 허용해주세요.';
-    }
     notifyListeners();
   }
 
-  void setRating(int value) {
-    _rating = value;
+  Future<bool> requestCameraPermission() async {
+    final status = await Permission.camera.request();
+    _hasCameraPermission = status.isGranted;
     notifyListeners();
-  }
-
-  void onQRViewCreated(QRViewController controller) {
-    _controller = controller;
-    controller.scannedDataStream.listen((scanData) {
-      if (scanData.code != null && !_isProcessing) {
-        if (isReturn) {
-          processReturnQRCode(scanData.code!);
-        } else {
-          processRentalQRCode(scanData.code!);
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
+    return status.isGranted;
   }
 
   Future<void> processRentalQRCode(String qrCode) async {
-    _isScanning = false;
+    if (_isProcessing) return;
+
     _isProcessing = true;
     _error = null;
     notifyListeners();
 
     try {
+      // QR 코드에서 액세서리 ID와 스테이션 ID 추출
       final parts = qrCode.split('_');
       if (parts.length != 2) {
         throw Exception('잘못된 QR 코드입니다.');
@@ -133,7 +99,6 @@ class QRScanViewModel with ChangeNotifier {
             selectedAccessoryId != scannedAccessoryId) {
           _error =
               'QR 코드가 선택하신 대여 정보와 일치하지 않습니다.\n선택하신 "${selectedAccessoryName}"와(과) "${selectedStationName}"의 QR 코드를 스캔해주세요.';
-          _isScanning = true;
           notifyListeners();
           return;
         }
@@ -158,14 +123,13 @@ class QRScanViewModel with ChangeNotifier {
         stationId: scannedStationId,
         accessoryName: accessory.name,
         stationName: station.name,
-        totalPrice: _rentalDuration * accessory.pricePerHour,
+        totalPrice: (_rentalDuration * accessory.pricePerHour).toInt(),
         status: RentalStatus.active,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
     } catch (e) {
       _error = e.toString();
-      _isScanning = true;
     } finally {
       _isProcessing = false;
       notifyListeners();
@@ -179,14 +143,13 @@ class QRScanViewModel with ChangeNotifier {
       return;
     }
 
-    _isScanning = false;
     _isProcessing = true;
     _error = null;
     notifyListeners();
 
     try {
       // QR 코드에서 스테이션 ID 추출
-      final stationId = qrCode.split('-')[0];
+      final stationId = qrCode.split('_')[0];
 
       // 반납 처리
       final now = DateTime.now();
@@ -211,15 +174,10 @@ class QRScanViewModel with ChangeNotifier {
     }
   }
 
-  void resumeScanning() {
-    _isScanning = true;
-    _error = null;
-    notifyListeners();
-  }
-
   void clearError() {
     _error = null;
-    _isScanning = true;
+    _isProcessing = false;
+    _rental = null;
     notifyListeners();
   }
 }

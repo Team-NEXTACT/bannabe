@@ -147,7 +147,6 @@ class _RentalStatusContent extends StatelessWidget {
                                         builder: (context) => QRScanView(
                                           rentalDuration: 0,
                                           isReturn: true,
-                                          rental: rental,
                                         ),
                                       ),
                                     );
