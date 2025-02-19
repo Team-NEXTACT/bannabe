@@ -28,7 +28,7 @@ class AppBottomNavigationBar extends StatelessWidget {
           case 2:
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) => const QRScanView(),
+                builder: (context) => const QRScanView(rentalDuration: 0, isReturn: false,),
               ),
             );
             break;
