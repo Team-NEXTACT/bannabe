@@ -227,7 +227,7 @@ class MyPageView extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 2),
+      bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 3),
     );
   }
 

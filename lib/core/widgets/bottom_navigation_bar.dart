@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../app/routes.dart';
 import '../services/auth_service.dart';
+import '../../features/rental/views/qr_scan_view.dart';
 
 class AppBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
@@ -25,6 +26,13 @@ class AppBottomNavigationBar extends StatelessWidget {
             Navigator.of(context).pushReplacementNamed(Routes.rental);
             break;
           case 2:
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const QRScanView(),
+              ),
+            );
+            break;
+          case 3:
             final user = AuthService.instance.currentUser;
             if (user?.email != null) {
               Navigator.of(context).pushReplacementNamed(Routes.mypage);
@@ -34,17 +42,25 @@ class AppBottomNavigationBar extends StatelessWidget {
             break;
         }
       },
+      type: BottomNavigationBarType.fixed,
       items: const [
         BottomNavigationBarItem(
-          icon: Icon(Icons.home),
+          icon: Icon(Icons.home_outlined),
+          activeIcon: Icon(Icons.home),
           label: '홈',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.inventory_2),
+          icon: Icon(Icons.shopping_bag_outlined),
+          activeIcon: Icon(Icons.shopping_bag),
           label: '대여',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.person),
+          icon: Icon(Icons.qr_code_scanner),
+          label: 'QR 스캔',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person_outline),
+          activeIcon: Icon(Icons.person),
           label: '마이페이지',
         ),
       ],

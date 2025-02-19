@@ -178,9 +178,9 @@ class _LoginViewState extends State<LoginView> {
                 ),
               ),
             ),
-            Align(
+            const Align(
               alignment: Alignment.bottomCenter,
-              child: const AppBottomNavigationBar(currentIndex: 2),
+              child: AppBottomNavigationBar(currentIndex: 3),
             ),
           ],
         ),
