@@ -168,6 +168,7 @@ class RentalRepository implements BaseRepository<Rental> {
 
   Future<List<Rental>> getRecentRentals() async {
     await Future.delayed(const Duration(seconds: 1));
+
     return [
       Rental(
         id: 'R3',
@@ -176,10 +177,12 @@ class RentalRepository implements BaseRepository<Rental> {
         stationId: 'S1',
         accessoryName: '노트북 고출력 충전기',
         stationName: '강남역점',
+        returnStationId: 'S2',
+        returnStationName: '홍대입구역점',
         totalPrice: 2000,
-        status: RentalStatus.completed,
-        createdAt: DateTime.now().subtract(const Duration(days: 1)),
-        updatedAt: DateTime.now().subtract(const Duration(days: 1)),
+        status: RentalStatus.overdue,
+        createdAt: DateTime.now().subtract(const Duration(days: 1, hours: 2)),
+        updatedAt: DateTime.now().subtract(const Duration(hours: 1)),
       ),
       Rental(
         id: 'R4',
@@ -188,6 +191,8 @@ class RentalRepository implements BaseRepository<Rental> {
         stationId: 'S2',
         accessoryName: '멀티 독 (Type-C)',
         stationName: '홍대입구역점',
+        returnStationId: 'S1',
+        returnStationName: '강남역점',
         totalPrice: 2000,
         status: RentalStatus.completed,
         createdAt: DateTime.now().subtract(const Duration(days: 2)),
@@ -200,8 +205,10 @@ class RentalRepository implements BaseRepository<Rental> {
         stationId: 'S3',
         accessoryName: '휴대폰용 보조배터리',
         stationName: '명동점',
+        returnStationId: 'S4',
+        returnStationName: '여의도역점',
         totalPrice: 1500,
-        status: RentalStatus.completed,
+        status: RentalStatus.overdueCompleted,
         createdAt: DateTime.now().subtract(const Duration(days: 3)),
         updatedAt: DateTime.now().subtract(const Duration(days: 3)),
       ),
