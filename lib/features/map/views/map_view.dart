@@ -170,6 +170,28 @@ class _MapContent extends StatelessWidget {
                                         color: AppColors.grey,
                                       ),
                                     ),
+                                    const SizedBox(height: 2),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          width: 8,
+                                          height: 8,
+                                          margin:
+                                              const EdgeInsets.only(right: 4),
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: viewModel
+                                                .selectedStation!.statusColor,
+                                          ),
+                                        ),
+                                        Text(
+                                          '${viewModel.selectedStation!.stations_status} · ${viewModel.selectedStation!.business_time}',
+                                          style: AppTheme.bodyMedium.copyWith(
+                                            color: AppColors.grey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ],
                                 ),
                               ),
@@ -207,12 +229,12 @@ class _MapContent extends StatelessWidget {
                                 backgroundColor: AppColors.primary,
                                 foregroundColor: AppColors.black,
                               ),
-                              child: const Text('이 스테이션에서 대여하기'),
+                              child: const Text('대여 가능 물품 조회'),
                               onPressed: () async {
                                 // 선택된 스테이션 정보 저장
                                 await _storageService.setString(
                                   'selected_station_id',
-                                  viewModel.selectedStation!.id,
+                                  viewModel.selectedStation!.id.toString(),
                                 );
                                 await _storageService.setString(
                                   'selected_station_name',
