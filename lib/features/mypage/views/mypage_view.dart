@@ -4,6 +4,8 @@ import '../../../core/constants/app_theme.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/widgets/bottom_navigation_bar.dart';
 import '../../../app/routes.dart';
+import '../../../features/rental/views/active_rentals_view.dart';
+import '../../../features/rental/views/rental_history_view.dart';
 
 class MyPageView extends StatelessWidget {
   const MyPageView({super.key});
@@ -88,10 +90,14 @@ class MyPageView extends StatelessWidget {
                     Expanded(
                       child: TextButton.icon(
                         onPressed: () {
-                          Navigator.of(context).pushNamed(Routes.rentalHistory);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const ActiveRentalsView(),
+                            ),
+                          );
                         },
-                        icon: const Icon(Icons.history),
-                        label: const Text('이용 내역'),
+                        icon: const Icon(Icons.access_time_filled),
+                        label: const Text('대여 현황'),
                       ),
                     ),
                     Container(
@@ -102,10 +108,14 @@ class MyPageView extends StatelessWidget {
                     Expanded(
                       child: TextButton.icon(
                         onPressed: () {
-                          // TODO: 결제 수단 관리 페이지로 이동
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const RentalHistoryView(),
+                            ),
+                          );
                         },
-                        icon: const Icon(Icons.payment),
-                        label: const Text('결제 수단 관리'),
+                        icon: const Icon(Icons.receipt_long),
+                        label: const Text('대여 내역'),
                       ),
                     ),
                   ],

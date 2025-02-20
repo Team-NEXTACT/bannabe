@@ -12,8 +12,7 @@ class RentalHistoryView extends StatefulWidget {
 
 class _RentalHistoryViewState extends State<RentalHistoryView> {
   final _rentalRepository = RentalRepository.instance;
-  List<Rental> _activeRentals = [];
-  List<Rental> _recentRentals = [];
+  List<Rental> _rentals = [];
   bool _isLoading = true;
 
   @override
@@ -28,12 +27,10 @@ class _RentalHistoryViewState extends State<RentalHistoryView> {
     });
 
     try {
-      final activeRentals = await _rentalRepository.getActiveRentals();
-      final recentRentals = await _rentalRepository.getRecentRentals();
+      final rentals = await _rentalRepository.getRecentRentals();
 
       setState(() {
-        _activeRentals = activeRentals;
-        _recentRentals = recentRentals;
+        _rentals = rentals;
         _isLoading = false;
       });
     } catch (e) {
@@ -52,43 +49,49 @@ class _RentalHistoryViewState extends State<RentalHistoryView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('이용 내역'),
+        title: const Text('대여 내역'),
         centerTitle: true,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _loadRentals,
-              child: ListView(
-                padding: const EdgeInsets.all(16.0),
-                children: [
-                  if (_activeRentals.isNotEmpty) ...[
-                    Text('현재 대여 중', style: AppTheme.titleMedium),
-                    const SizedBox(height: 8),
-                    ..._activeRentals.map((rental) => _buildRentalCard(rental)),
-                    const SizedBox(height: 24),
-                  ],
-                  Text('지난 대여 내역', style: AppTheme.titleMedium),
-                  const SizedBox(height: 8),
-                  if (_recentRentals.isEmpty)
-                    const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(32.0),
-                        child: Text('아직 대여 내역이 없습니다'),
-                      ),
+              child: _rentals.isEmpty
+                  ? const Center(
+                      child: Text('지난 대여 내역이 없습니다'),
                     )
-                  else
-                    ..._recentRentals.map((rental) => _buildRentalCard(rental)),
-                ],
-              ),
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(16.0),
+                      itemCount: _rentals.length,
+                      itemBuilder: (context, index) {
+                        return _buildRentalCard(_rentals[index]);
+                      },
+                    ),
             ),
     );
   }
 
   Widget _buildRentalCard(Rental rental) {
-    final isActive = rental.status == RentalStatus.active;
-    final statusText = isActive ? '대여 중' : '반납 완료';
-    final statusColor = isActive ? Colors.blue : Colors.grey;
+    String statusText;
+    Color statusColor;
+    switch (rental.status) {
+      case RentalStatus.active:
+        statusText = '대여 중';
+        statusColor = Colors.blue;
+        break;
+      case RentalStatus.completed:
+        statusText = '반납 완료';
+        statusColor = Colors.grey;
+        break;
+      case RentalStatus.overdue:
+        statusText = '연체';
+        statusColor = Colors.red;
+        break;
+      case RentalStatus.overdueCompleted:
+        statusText = '반납 완료';
+        statusColor = Colors.grey;
+        break;
+    }
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8.0),
@@ -126,11 +129,106 @@ class _RentalHistoryViewState extends State<RentalHistoryView> {
               ],
             ),
             const SizedBox(height: 8),
-            Text('스테이션: ${rental.stationName}'),
+            Text('대여 스테이션: ${rental.stationName}'),
             const SizedBox(height: 4),
-            Text('대여 시간: ${rental.formattedRentalTime}'),
+            Text('반납 스테이션: ${rental.returnStationName ?? rental.stationName}'),
+            const SizedBox(height: 4),
+            Text(
+              '대여일시: ${rental.createdAt.toString().substring(0, 16)}',
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '반납일시: ${rental.updatedAt.toString().substring(0, 16)}',
+            ),
             const SizedBox(height: 4),
             Text('결제 금액: ${rental.totalPrice}원'),
+            if (rental.isOverdue) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.warning_amber_rounded,
+                          color: Colors.red[700],
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '연체 정보',
+                          style: TextStyle(
+                            color: Colors.red[700],
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '연체 시간: ${rental.overdueDuration.inHours}시간',
+                      style: const TextStyle(
+                        color: Colors.red,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '연체료: ${rental.overdueFee}원',
+                      style: const TextStyle(
+                        color: Colors.red,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              // TODO: 연장 기능 구현
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('준비 중인 기능입니다.'),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue.withOpacity(0.1),
+                              foregroundColor: Colors.blue,
+                              elevation: 0,
+                            ),
+                            child: const Text('연장하기'),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              // TODO: 연체료 결제 기능 구현
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('준비 중인 기능입니다.'),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text('연체료 결제'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),

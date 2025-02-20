@@ -1,7 +1,8 @@
 enum RentalStatus {
-  active,
-  completed,
-  cancelled,
+  active, // 대여중
+  completed, // 반납 완료
+  overdue, // 연체
+  overdueCompleted, // 연체 결제
 }
 
 class Rental {
@@ -11,6 +12,8 @@ class Rental {
   final String stationId;
   final String accessoryName;
   final String stationName;
+  final String? returnStationId;
+  final String? returnStationName;
   final int totalPrice;
   final RentalStatus status;
   final DateTime createdAt;
@@ -23,6 +26,8 @@ class Rental {
     required this.stationId,
     required this.accessoryName,
     required this.stationName,
+    this.returnStationId,
+    this.returnStationName,
     required this.totalPrice,
     required this.status,
     required this.createdAt,
@@ -37,6 +42,8 @@ class Rental {
       stationId: json['stationId'] as String,
       accessoryName: json['accessoryName'] as String,
       stationName: json['stationName'] as String,
+      returnStationId: json['returnStationId'] as String?,
+      returnStationName: json['returnStationName'] as String?,
       totalPrice: json['totalPrice'] as int,
       status: RentalStatus.values.firstWhere(
         (e) => e.toString() == 'RentalStatus.${json['status']}',
@@ -54,6 +61,8 @@ class Rental {
       'stationId': stationId,
       'accessoryName': accessoryName,
       'stationName': stationName,
+      'returnStationId': returnStationId,
+      'returnStationName': returnStationName,
       'totalPrice': totalPrice,
       'status': status.toString().split('.').last,
       'createdAt': createdAt.toIso8601String(),
@@ -67,6 +76,29 @@ class Rental {
     return rentalDuration - elapsedTime;
   }
 
+  bool get isOverdue {
+    return status == RentalStatus.overdue;
+  }
+
+  int get overdueFee {
+    if (!isOverdue) return 0;
+    final rentalDuration = Duration(hours: totalPrice ~/ 1000);
+    final actualDuration = updatedAt.difference(createdAt);
+    final overdueDuration = actualDuration - rentalDuration;
+    // 1.5배 연체료
+    return (overdueDuration.inHours *
+            (totalPrice ~/ rentalDuration.inHours) *
+            1.5)
+        .toInt();
+  }
+
+  Duration get overdueDuration {
+    if (!isOverdue) return Duration.zero;
+    final rentalDuration = Duration(hours: totalPrice ~/ 1000);
+    final actualDuration = updatedAt.difference(createdAt);
+    return actualDuration - rentalDuration;
+  }
+
   Duration get totalRentalTime {
     // 시간당 1000원으로 계산
     final hours = totalPrice ~/ 1000;
@@ -77,8 +109,8 @@ class Rental {
     // 시간당 가격으로 대여 시간 계산
     final hours = totalPrice ~/ 1000;
 
-    if (status == RentalStatus.active) {
-      return '$hours시간';
+    if (status == RentalStatus.overdue) {
+      return '$hours시간 (연체)';
     } else {
       return '$hours시간 이용';
     }
