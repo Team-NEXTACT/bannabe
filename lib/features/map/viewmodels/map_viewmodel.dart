@@ -87,7 +87,7 @@ class MapViewModel with ChangeNotifier {
 
     for (final station in stations) {
       final marker = NMarker(
-        id: station.id,
+        id: station.id.toString(),
         position: NLatLng(
           station.latitude,
           station.longitude,
@@ -264,7 +264,7 @@ class MapViewModel with ChangeNotifier {
 
       await _storageService.setStringList(
         'favorite_stations',
-        _favoriteStations.map((s) => s.id).toList(),
+        _favoriteStations.map((s) => s.id.toString()).toList(),
       );
       notifyListeners();
     } catch (e) {
@@ -295,7 +295,7 @@ class MapViewModel with ChangeNotifier {
 
       await _storageService.setStringList(
         'recent_stations',
-        _recentStations.map((s) => s.id).toList(),
+        _recentStations.map((s) => s.id.toString()).toList(),
       );
       notifyListeners();
     } catch (e) {

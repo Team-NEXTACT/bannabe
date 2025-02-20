@@ -57,7 +57,7 @@ class _RentalDetailViewState extends State<RentalDetailView> {
         // 스테이션 정보 불러오기
         if (savedStationId != null) {
           final stationRepository = StationRepository.instance;
-          final station = await stationRepository.getStation(savedStationId);
+          final station = await stationRepository.getStation(int.parse(savedStationId));
           if (station != null) {
             setState(() {
               _selectedStation = station;
@@ -254,7 +254,7 @@ class _RentalDetailViewState extends State<RentalDetailView> {
                             );
                             await _storageService.setString(
                               'selected_station_id',
-                              _selectedStation?.id ?? '',
+                              _selectedStation?.id.toString() ?? '',
                             );
                             await _storageService.setString(
                               'selected_accessory_name',

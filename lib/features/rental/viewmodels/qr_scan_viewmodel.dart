@@ -106,7 +106,7 @@ class QRScanViewModel extends ChangeNotifier {
 
       // 액세서리와 스테이션 정보 조회
       final accessory = await _accessoryRepository.get(scannedAccessoryId);
-      final station = await _stationRepository.getStation(scannedStationId);
+      final station = await _stationRepository.getStation(int.parse(scannedStationId));
 
       if (!accessory.isAvailable) {
         throw Exception('현재 대여할 수 없는 물품입니다.');
