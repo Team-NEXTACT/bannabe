@@ -57,7 +57,8 @@ class _RentalDetailViewState extends State<RentalDetailView> {
         // 스테이션 정보 불러오기
         if (savedStationId != null) {
           final stationRepository = StationRepository.instance;
-          final station = await stationRepository.getStation(savedStationId);
+          final station =
+              await stationRepository.getStation(int.parse(savedStationId));
           if (station != null) {
             setState(() {
               _selectedStation = station;
@@ -135,100 +136,24 @@ class _RentalDetailViewState extends State<RentalDetailView> {
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                           const SizedBox(height: 24),
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: _selectedStation == null
-                                      ? Colors.grey[200]
-                                      : _quantity > 0
-                                          ? Theme.of(context)
-                                              .primaryColor
-                                              .withOpacity(0.1)
-                                          : Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  _selectedStation == null
-                                      ? '스테이션 선택 후 수량 확인'
-                                      : '남은 수량: $_quantity개',
-                                  style: TextStyle(
-                                    color: _selectedStation == null
-                                        ? Colors.grey[600]
-                                        : _quantity > 0
-                                            ? Theme.of(context).primaryColor
-                                            : Colors.grey[600],
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-                          Text(
-                            '스테이션 정보',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          const SizedBox(height: 8),
-                          if (_selectedStation != null)
+                          if (_selectedStation != null && _quantity > 0)
                             Container(
-                              padding: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
                               decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: Colors.grey[300]!,
+                                color: Theme.of(context)
+                                    .primaryColor
+                                    .withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '남은 수량: $_quantity개',
+                                style: TextStyle(
+                                  color: Theme.of(context).primaryColor,
+                                  fontWeight: FontWeight.w500,
                                 ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          _selectedStation!.name,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .titleSmall,
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          _selectedStation!.address,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.grey[600],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  TextButton(
-                                    onPressed: _selectStation,
-                                    child: const Text('변경'),
-                                  ),
-                                ],
-                              ),
-                            )
-                          else
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: Colors.grey[300]!,
-                                ),
-                              ),
-                              child: TextButton(
-                                onPressed: _selectStation,
-                                child: const Text('스테이션 선택'),
                               ),
                             ),
                         ],
@@ -243,57 +168,60 @@ class _RentalDetailViewState extends State<RentalDetailView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  ElevatedButton(
-                    onPressed: (_selectedStation == null || _quantity == 0)
-                        ? null
-                        : () async {
-                            // 쿠키에 정보 저장
-                            await _storageService.setString(
-                              'selected_accessory_id',
-                              widget.accessory.id,
-                            );
-                            await _storageService.setString(
-                              'selected_station_id',
-                              _selectedStation?.id ?? '',
-                            );
-                            await _storageService.setString(
-                              'selected_accessory_name',
-                              widget.accessory.name,
-                            );
-                            await _storageService.setString(
-                              'selected_station_name',
-                              _selectedStation?.name ?? '',
-                            );
-                            await _storageService.setInt(
-                              'selected_rental_duration',
-                              _selectedHours,
-                            );
-                            await _storageService.setInt(
-                              'selected_price',
-                              widget.accessory.pricePerHour * _selectedHours,
-                            );
+                  if (_selectedStation == null)
+                    ElevatedButton(
+                      onPressed: _selectStation,
+                      child: const Text('스테이션 선택 후 수량 확인하기'),
+                    )
+                  else if (_quantity == 0)
+                    ElevatedButton(
+                      onPressed: null,
+                      child: const Text('현재 대여 불가능'),
+                    )
+                  else
+                    ElevatedButton(
+                      onPressed: () async {
+                        // 쿠키에 정보 저장
+                        await _storageService.setString(
+                          'selected_accessory_id',
+                          widget.accessory.id,
+                        );
+                        await _storageService.setString(
+                          'selected_station_id',
+                          _selectedStation?.id.toString() ?? '',
+                        );
+                        await _storageService.setString(
+                          'selected_accessory_name',
+                          widget.accessory.name,
+                        );
+                        await _storageService.setString(
+                          'selected_station_name',
+                          _selectedStation?.name ?? '',
+                        );
+                        await _storageService.setInt(
+                          'selected_rental_duration',
+                          _selectedHours,
+                        );
+                        await _storageService.setInt(
+                          'selected_price',
+                          widget.accessory.pricePerHour * _selectedHours,
+                        );
 
-                            final scanned = await Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => QRScanView(
-                                  rentalDuration: _selectedHours,
-                                  isReturn: false,
-                                ),
-                              ),
-                            );
+                        final scanned = await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => QRScanView(
+                              rentalDuration: _selectedHours,
+                              isReturn: false,
+                            ),
+                          ),
+                        );
 
-                            if (scanned == true && context.mounted) {
-                              Navigator.of(context).pushNamed(Routes.payment);
-                            }
-                          },
-                    child: Text(
-                      _selectedStation == null
-                          ? '스테이션을 선택해주세요'
-                          : _quantity == 0
-                              ? '현재 대여 불가능'
-                              : 'QR 스캔하기',
+                        if (scanned == true && context.mounted) {
+                          Navigator.of(context).pushNamed(Routes.payment);
+                        }
+                      },
+                      child: const Text('QR 스캔하기'),
                     ),
-                  ),
                 ],
               ),
             ),
