@@ -4,10 +4,10 @@ import '../viewmodels/home_viewmodel.dart';
 import '../../../core/widgets/bottom_navigation_bar.dart';
 import '../../../core/widgets/loading_animation.dart';
 import '../../../app/routes.dart';
-import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/map_view.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../data/models/rental.dart';
+import 'dart:async';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -17,6 +17,43 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
+  late PageController _pageController;
+  int _currentPage = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    _startAutoScroll();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startAutoScroll() {
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (!_pageController.hasClients) return;
+
+      if (_currentPage < 2) {
+        _pageController.nextPage(
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeInOut,
+        );
+      } else {
+        _pageController.animateToPage(
+          0,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -122,13 +159,15 @@ class _HomeViewState extends State<HomeView> {
                                 ),
                                 child: Column(
                                   children: [
-                                    const SizedBox(height: 16),
+                                    _buildEventBannerSection(context),
+                                    const SizedBox(height: 24),
                                     _buildNoticeSection(context, viewModel),
                                   ],
                                 ),
                               ),
                             ),
                           ),
+                          /*
                           SliverToBoxAdapter(
                             child: Padding(
                               padding: const EdgeInsets.all(16.0),
@@ -460,6 +499,7 @@ class _HomeViewState extends State<HomeView> {
                               ),
                             ),
                           ),
+                          */
                           SliverToBoxAdapter(
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
@@ -467,6 +507,14 @@ class _HomeViewState extends State<HomeView> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  const Text(
+                                    '스테이션 찾기',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
                                   AspectRatio(
                                     aspectRatio: 2,
                                     child: InkWell(
@@ -482,19 +530,11 @@ class _HomeViewState extends State<HomeView> {
                                       },
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(10),
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            border: Border.all(
-                                              color: Colors.black,
-                                              width: 1,
-                                            ),
-                                          ),
-                                          child: MapView(
-                                            isPreview: true,
-                                            initialPosition:
-                                                viewModel.currentLocation,
-                                            stations: viewModel.nearbyStations,
-                                          ),
+                                        child: MapView(
+                                          isPreview: true,
+                                          initialPosition:
+                                              viewModel.currentLocation,
+                                          stations: viewModel.nearbyStations,
                                         ),
                                       ),
                                     ),
@@ -518,6 +558,146 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
+  Widget _buildEventBannerSection(BuildContext context) {
+    final List<Map<String, String>> events = [
+      {
+        'title': '신규 가입 이벤트',
+        'description': '첫 대여 시 1시간 무료!',
+        'image': 'assets/images/smartphone_qr_code_man.png',
+        'backgroundColor': '#FFBE00',
+      },
+      {
+        'title': '멤버십 할인 이벤트',
+        'description': '월 99,900원으로 무제한 대여',
+        'image': 'assets/images/pc_smartphone_battery_juuden.png',
+        'backgroundColor': '#FF6B6B',
+      },
+      {
+        'title': '친구 초대 이벤트',
+        'description': '친구 초대하고 포인트 받기',
+        'image': 'assets/images/smartphone_couple.png',
+        'backgroundColor': '#4ECDC4',
+      },
+    ];
+
+    return SizedBox(
+      height: 180,
+      child: Stack(
+        children: [
+          PageView.builder(
+            controller: _pageController,
+            itemCount: events.length,
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              final event = events[index];
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  color: Color(int.parse(
+                          event['backgroundColor']!.substring(1, 7),
+                          radix: 16) +
+                      0xFF000000),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Stack(
+                  children: [
+                    if (event['image'] != null)
+                      Positioned(
+                        right: -25,
+                        top: 0,
+                        bottom: 0,
+                        width: MediaQuery.of(context).size.width * 0.6,
+                        child: Image.asset(
+                          event['image']!,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey[200],
+                              child: const Center(
+                                child: Icon(Icons.image_not_supported),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    Positioned(
+                      left: 24,
+                      top: 40,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              'EVENT',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            event['title']!,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              height: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            event['description']!,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              height: 1.2,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          Positioned(
+            bottom: 16,
+            left: 24,
+            child: Row(
+              children: List.generate(events.length, (index) {
+                return Container(
+                  width: 24,
+                  height: 4,
+                  margin: const EdgeInsets.only(right: 4),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(2),
+                    color: _currentPage == index
+                        ? Colors.white
+                        : Colors.white.withOpacity(0.3),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildNoticeSection(BuildContext context, HomeViewModel viewModel) {
     return InkWell(
       onTap: () {
@@ -526,20 +706,20 @@ class _HomeViewState extends State<HomeView> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.black,
+          color: Colors.amber.withOpacity(0.5),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           children: [
             const Text(
               '공지사항 | ',
-              style: TextStyle(fontSize: 14, color: Colors.white),
+              style: TextStyle(fontSize: 14, color: Colors.black),
             ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 viewModel.latestNotice?.title ?? '새로운 공지사항이 없습니다.',
-                style: const TextStyle(fontSize: 14, color: Colors.white),
+                style: const TextStyle(fontSize: 14, color: Colors.black),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -554,7 +734,7 @@ class _HomeViewState extends State<HomeView> {
       ),
     );
   }
-
+/*
   Future<void> _saveRentalInfo(Rental rental) async {
     final storageService = StorageService.instance;
     await storageService.setString('selected_accessory_id', rental.accessoryId);
@@ -579,4 +759,5 @@ class _HomeViewState extends State<HomeView> {
       'isAvailable': true,
     };
   }
+*/
 }

@@ -88,7 +88,7 @@ class _MapViewState extends State<MapView> {
 
     for (final station in widget.stations!) {
       final marker = NMarker(
-        id: station.id.toString(), // Convert int to String
+        id: station.id.toString(),
         position: NLatLng(
           station.latitude,
           station.longitude,

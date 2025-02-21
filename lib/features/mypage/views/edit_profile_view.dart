@@ -12,7 +12,6 @@ class EditProfileView extends StatefulWidget {
 
 class _EditProfileViewState extends State<EditProfileView> {
   final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
   bool _isLoading = false;
   String? _error;
 
@@ -22,24 +21,21 @@ class _EditProfileViewState extends State<EditProfileView> {
     final user = AuthService.instance.currentUser;
     if (user != null) {
       _nameController.text = user.name;
-      _phoneController.text = user.phoneNumber;
     }
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _phoneController.dispose();
     super.dispose();
   }
 
   Future<void> _save() async {
     final name = _nameController.text.trim();
-    final phone = _phoneController.text.trim();
 
-    if (name.isEmpty || phone.isEmpty) {
+    if (name.isEmpty) {
       setState(() {
-        _error = '모든 필드를 입력해주세요.';
+        _error = '닉네임을 입력해주세요.';
       });
       return;
     }
@@ -52,7 +48,7 @@ class _EditProfileViewState extends State<EditProfileView> {
     try {
       await AuthService.instance.updateProfile(
         name: name,
-        phoneNumber: phone,
+        phoneNumber: AuthService.instance.currentUser?.phoneNumber ?? '',
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -134,24 +130,8 @@ class _EditProfileViewState extends State<EditProfileView> {
               TextField(
                 controller: _nameController,
                 decoration: InputDecoration(
-                  hintText: '이름',
-                  contentPadding: const EdgeInsets.all(16),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.lightGrey),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.lightGrey),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
-                  hintText: '휴대폰 번호',
+                  labelText: '닉네임',
+                  hintText: '닉네임을 입력해주세요',
                   contentPadding: const EdgeInsets.all(16),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
