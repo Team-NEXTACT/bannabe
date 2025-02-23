@@ -16,4 +16,6 @@ class Routes {
   static const String terms = '/terms';
   static const String signupComplete = '/signup-complete';
   static const String rentalStatus = '/rental/status';
+  static const String notifications = '/notifications';
+  static const String stationMap = '/station-map';
 }

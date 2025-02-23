@@ -28,167 +28,209 @@ class MyPageView extends StatelessWidget {
             children: [
               // 1. 회원 정보 필드
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey[300]!),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primary.withOpacity(0.8),
+                      AppColors.primary.withOpacity(0.6),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
                     Container(
-                      width: 60,
-                      height: 60,
-                      decoration: const BoxDecoration(
+                      width: 70,
+                      height: 70,
+                      decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        image: DecorationImage(
+                        border: Border.all(color: Colors.white, width: 2),
+                        image: const DecorationImage(
                           image: AssetImage('assets/images/profile.jpg'),
                           fit: BoxFit.cover,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 20),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             '${user?.name}님',
-                            style: AppTheme.titleMedium,
+                            style: AppTheme.titleMedium.copyWith(
+                              color: Colors.white,
+                              fontSize: 22,
+                            ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             user?.email ?? '',
                             style: AppTheme.bodyMedium.copyWith(
-                              color: Colors.grey[600],
+                              color: Colors.white.withOpacity(0.9),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    TextButton(
+                    IconButton(
                       onPressed: () {
                         Navigator.of(context).pushNamed(Routes.editProfile);
                       },
-                      child: const Text('회원정보 수정'),
+                      icon: const Icon(
+                        Icons.edit,
+                        color: Colors.white,
+                      ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
 
-              // 2. My 필드
+              // 2. 대여 관련 메뉴
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey[300]!),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: TextButton.icon(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const ActiveRentalsView(),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.access_time_filled),
-                        label: const Text('대여 현황'),
+                    Text(
+                      '대여 관리',
+                      style: AppTheme.titleMedium.copyWith(
+                        fontSize: 18,
                       ),
                     ),
-                    Container(
-                      width: 1,
-                      height: 24,
-                      color: Colors.grey[300],
-                    ),
-                    Expanded(
-                      child: TextButton.icon(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const RentalHistoryView(),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.receipt_long),
-                        label: const Text('대여 내역'),
-                      ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildMenuButton(
+                            context,
+                            icon: Icons.access_time_filled,
+                            label: '대여 현황',
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const ActiveRentalsView(),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildMenuButton(
+                            context,
+                            icon: Icons.receipt_long,
+                            label: '대여 내역',
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const RentalHistoryView(),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
 
               // 3. 고객지원 필드
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey[300]!),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       '고객지원',
-                      style: AppTheme.titleMedium,
+                      style: AppTheme.titleMedium.copyWith(
+                        fontSize: 18,
+                      ),
                     ),
                     const SizedBox(height: 16),
-                    Row(
+                    GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: 3,
+                      mainAxisSpacing: 16,
+                      crossAxisSpacing: 16,
+                      childAspectRatio: 1.1,
                       children: [
                         _buildSupportButton(
                           '이용 약관',
-                          Icons.description,
+                          Icons.description_outlined,
                           onPressed: () {
                             // TODO: 이용 약관 페이지로 이동
                           },
                         ),
                         _buildSupportButton(
-                          '개인정보 처리방침',
-                          Icons.security,
+                          '개인정보\n처리방침',
+                          Icons.security_outlined,
                           onPressed: () {
                             // TODO: 개인정보 처리방침 페이지로 이동
                           },
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
                         _buildSupportButton(
                           '공지사항',
-                          Icons.notifications,
+                          Icons.notifications_outlined,
                           onPressed: () {
                             Navigator.of(context).pushNamed(Routes.noticeList);
                           },
                         ),
                         _buildSupportButton(
                           '자주 묻는 질문',
-                          Icons.help,
+                          Icons.help_outline,
                           onPressed: () {
                             // TODO: FAQ 페이지로 이동
                           },
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
                         _buildSupportButton(
                           '전화문의',
-                          Icons.phone,
+                          Icons.phone_outlined,
                           onPressed: () {
                             // TODO: 전화문의 기능 구현
                           },
                         ),
                         _buildSupportButton(
                           '1:1 채팅상담',
-                          Icons.chat,
+                          Icons.chat_outlined,
                           onPressed: () {
                             // TODO: 채팅상담 페이지로 이동
                           },
@@ -198,40 +240,29 @@ class MyPageView extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
 
-              // 4. 베너 광고
-              Container(
-                height: 100,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Center(
-                  child: Text(
-                    '광고 영역',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
+              // 4. 로그아웃 버튼
 
-              // 5. 로그아웃 버튼
-              ElevatedButton(
+              ElevatedButton.icon(
                 onPressed: () async {
                   await AuthService.instance.signOut();
+
                   if (context.mounted) {
                     Navigator.of(context).pushReplacementNamed(Routes.login);
                   }
                 },
+                icon: const Icon(Icons.logout, color: AppColors.error),
+                label: const Text('로그아웃'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: AppColors.error,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: AppColors.error.withOpacity(0.5)),
+                  ),
                 ),
-                child: const Text('로그아웃'),
               ),
             ],
           ),
@@ -241,27 +272,83 @@ class MyPageView extends StatelessWidget {
     );
   }
 
+  Widget _buildMenuButton(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.lightGrey),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: AppColors.primary,
+                size: 28,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSupportButton(
     String label,
     IconData icon, {
     required VoidCallback onPressed,
   }) {
-    return Expanded(
-      child: TextButton(
-        onPressed: onPressed,
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-        ),
-        child: Column(
-          children: [
-            Icon(icon),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: AppTheme.bodySmall,
-            ),
-          ],
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            border: Border.all(color: AppColors.lightGrey),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                color: Colors.grey[700],
+                size: 24,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey[800],
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ),
     );

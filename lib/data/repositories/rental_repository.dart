@@ -107,6 +107,7 @@ class RentalRepository implements BaseRepository<Rental> {
 
   Future<List<Rental>> getActiveRentals() async {
     await Future.delayed(const Duration(seconds: 1));
+    final now = DateTime.now();
     return [
       Rental(
         id: 'R1',
@@ -117,8 +118,8 @@ class RentalRepository implements BaseRepository<Rental> {
         stationName: '강남역점',
         totalPrice: 3000,
         status: RentalStatus.active,
-        createdAt: DateTime.now().subtract(const Duration(hours: 1)),
-        updatedAt: DateTime.now().subtract(const Duration(hours: 1)),
+        createdAt: now.subtract(const Duration(hours: 1)),
+        updatedAt: now.subtract(const Duration(hours: 1)),
       ),
       Rental(
         id: 'R2',
@@ -129,8 +130,8 @@ class RentalRepository implements BaseRepository<Rental> {
         stationName: '홍대입구역점',
         totalPrice: 500,
         status: RentalStatus.active,
-        createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
-        updatedAt: DateTime.now().subtract(const Duration(minutes: 30)),
+        createdAt: now.subtract(const Duration(minutes: 30)),
+        updatedAt: now.subtract(const Duration(minutes: 30)),
       ),
     ];
   }
@@ -148,8 +149,8 @@ class RentalRepository implements BaseRepository<Rental> {
         stationName: '강남역점',
         totalPrice: 5000,
         status: RentalStatus.completed,
-        createdAt: now.subtract(const Duration(days: 1)),
-        updatedAt: now,
+        createdAt: now.subtract(const Duration(days: 1, hours: 2)),
+        updatedAt: now.subtract(const Duration(days: 1)),
       ),
       Rental(
         id: 'rental-2',
@@ -160,14 +161,15 @@ class RentalRepository implements BaseRepository<Rental> {
         stationName: '홍대입구역점',
         totalPrice: 7000,
         status: RentalStatus.completed,
-        createdAt: now.subtract(const Duration(days: 2)),
-        updatedAt: now.subtract(const Duration(days: 1)),
+        createdAt: now.subtract(const Duration(days: 2, hours: 3)),
+        updatedAt: now.subtract(const Duration(days: 2)),
       ),
     ];
   }
 
   Future<List<Rental>> getRecentRentals() async {
     await Future.delayed(const Duration(seconds: 1));
+    final now = DateTime.now();
 
     return [
       Rental(
@@ -181,8 +183,8 @@ class RentalRepository implements BaseRepository<Rental> {
         returnStationName: '홍대입구역점',
         totalPrice: 2000,
         status: RentalStatus.overdue,
-        createdAt: DateTime.now().subtract(const Duration(days: 1, hours: 2)),
-        updatedAt: DateTime.now().subtract(const Duration(hours: 1)),
+        createdAt: now.subtract(const Duration(days: 1, hours: 5)),
+        updatedAt: now.subtract(const Duration(days: 1)),
       ),
       Rental(
         id: 'R4',
@@ -195,8 +197,8 @@ class RentalRepository implements BaseRepository<Rental> {
         returnStationName: '강남역점',
         totalPrice: 2000,
         status: RentalStatus.completed,
-        createdAt: DateTime.now().subtract(const Duration(days: 2)),
-        updatedAt: DateTime.now().subtract(const Duration(days: 2)),
+        createdAt: now.subtract(const Duration(days: 2, hours: 4)),
+        updatedAt: now.subtract(const Duration(days: 2)),
       ),
       Rental(
         id: 'R5',
@@ -209,8 +211,8 @@ class RentalRepository implements BaseRepository<Rental> {
         returnStationName: '여의도역점',
         totalPrice: 1500,
         status: RentalStatus.overdueCompleted,
-        createdAt: DateTime.now().subtract(const Duration(days: 3)),
-        updatedAt: DateTime.now().subtract(const Duration(days: 3)),
+        createdAt: now.subtract(const Duration(days: 3, hours: 5)),
+        updatedAt: now.subtract(const Duration(days: 3)),
       ),
       Rental(
         id: 'R6',
@@ -221,8 +223,8 @@ class RentalRepository implements BaseRepository<Rental> {
         stationName: '여의도역점',
         totalPrice: 1000,
         status: RentalStatus.completed,
-        createdAt: DateTime.now().subtract(const Duration(days: 4)),
-        updatedAt: DateTime.now().subtract(const Duration(days: 4)),
+        createdAt: now.subtract(const Duration(days: 4, hours: 2)),
+        updatedAt: now.subtract(const Duration(days: 4)),
       ),
     ];
   }
