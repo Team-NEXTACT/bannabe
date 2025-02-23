@@ -243,24 +243,17 @@ class MyPageView extends StatelessWidget {
               const SizedBox(height: 24),
 
               // 4. 로그아웃 버튼
-
               ElevatedButton.icon(
-                onPressed: () async {
-                  await AuthService.instance.signOut();
-
-                  if (context.mounted) {
-                    Navigator.of(context).pushReplacementNamed(Routes.login);
-                  }
-                },
-                icon: const Icon(Icons.logout, color: AppColors.error),
+                onPressed: null,
+                icon: const Icon(Icons.logout, color: Colors.grey),
                 label: const Text('로그아웃'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
-                  foregroundColor: AppColors.error,
+                  foregroundColor: Colors.grey,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: AppColors.error.withOpacity(0.5)),
+                    side: BorderSide(color: Colors.grey.withOpacity(0.5)),
                   ),
                 ),
               ),

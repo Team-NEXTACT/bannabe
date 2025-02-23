@@ -365,7 +365,7 @@ class _PaymentViewState extends State<PaymentView> {
                       child: Image.asset(
                         'assets/images/btn_send_regular.png',
                         width: double.infinity,
-                        height: 48,
+                        height: 44,
                         fit: BoxFit.contain,
                       ),
                     ),

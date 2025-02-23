@@ -4,6 +4,7 @@ import '../../../data/repositories/rental_repository.dart';
 import '../../../core/constants/app_theme.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/bottom_navigation_bar.dart';
+import '../../../app/routes.dart';
 
 class ActiveRentalsView extends StatefulWidget {
   final Rental? newRental;
@@ -63,6 +64,12 @@ class _ActiveRentalsViewState extends State<ActiveRentalsView> {
       appBar: AppBar(
         title: const Text('현재 대여 중'),
         centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pushReplacementNamed(Routes.mypage);
+          },
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())

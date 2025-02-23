@@ -4,6 +4,7 @@ import '../../../data/repositories/rental_repository.dart';
 import '../../../core/constants/app_theme.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/bottom_navigation_bar.dart';
+import '../../../app/routes.dart';
 
 class RentalHistoryView extends StatefulWidget {
   const RentalHistoryView({super.key});
@@ -53,6 +54,12 @@ class _RentalHistoryViewState extends State<RentalHistoryView> {
       appBar: AppBar(
         title: const Text('대여 내역'),
         centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.of(context).pushReplacementNamed(Routes.mypage);
+          },
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
