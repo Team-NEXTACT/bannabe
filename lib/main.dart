@@ -97,7 +97,9 @@ class MyApp extends StatelessWidget {
         },
         Routes.rentalStatus: (context) => const RentalStatusView(),
         Routes.rentalHistory: (context) => const RentalHistoryView(),
-        Routes.payment: (context) => const PaymentView(),
+        Routes.payment: (context) => PaymentView(
+              rental: ModalRoute.of(context)!.settings.arguments as Rental,
+            ),
         Routes.paymentComplete: (context) => PaymentCompleteView(
               rental: ModalRoute.of(context)!.settings.arguments as Rental,
             ),

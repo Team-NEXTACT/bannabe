@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_theme.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../data/models/rental.dart';
 import '../../../app/routes.dart';
 
-enum PaymentMethod {
-  card,
-  toss,
-  naver,
-  kakao,
-}
-
 class PaymentView extends StatefulWidget {
-  const PaymentView({super.key});
+  final Rental rental;
+
+  const PaymentView({
+    super.key,
+    required this.rental,
+  });
 
   @override
   State<PaymentView> createState() => _PaymentViewState();
@@ -24,7 +23,6 @@ class _PaymentViewState extends State<PaymentView> {
   String? stationName;
   int? hours;
   int? totalPrice;
-  PaymentMethod selectedMethod = PaymentMethod.card;
   bool agreedToTerms = false;
 
   @override
@@ -51,17 +49,103 @@ class _PaymentViewState extends State<PaymentView> {
     }
   }
 
-  String _getPaymentMethodName(PaymentMethod method) {
-    switch (method) {
-      case PaymentMethod.card:
-        return '신용/체크카드';
-      case PaymentMethod.toss:
-        return '토스페이';
-      case PaymentMethod.naver:
-        return '네이버페이';
-      case PaymentMethod.kakao:
-        return '카카오페이';
+  Future<void> _launchKakaoPayLink() async {
+    final url = Uri.parse('https://link.kakaopay.com/_/9DvW7m_');
+
+    try {
+      if (await canLaunchUrl(url)) {
+        final launched = await launchUrl(
+          url,
+          mode: LaunchMode.externalApplication,
+        );
+
+        if (!launched) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('결제 링크를 열 수 없습니다.'),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          }
+          return;
+        }
+
+        // 결제 완료 여부를 확인하기 위해 결제 상태를 주기적으로 체크
+        if (mounted) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => AlertDialog(
+              title: const Text('결제 진행 중'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  const Text('카카오페이 결제를 완료해주세요.'),
+                  const SizedBox(height: 8),
+                  const Text(
+                    '결제가 완료되면 자동으로 다음 화면으로 이동합니다.',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('취소'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pushReplacementNamed(
+                      Routes.paymentComplete,
+                      arguments: widget.rental,
+                    );
+                  },
+                  child: const Text('결제 완료'),
+                ),
+              ],
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('결제 링크를 열 수 없습니다.'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('결제 링크를 여는 중 오류가 발생했습니다: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
+  }
+
+  void _handlePaymentButtonTap() {
+    if (!agreedToTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('결제 약관에 동의해주세요.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    _launchKakaoPayLink();
   }
 
   @override
@@ -89,44 +173,64 @@ class _PaymentViewState extends State<PaymentView> {
                             children: [
                               Text('대여 정보', style: AppTheme.titleMedium),
                               const SizedBox(height: 16),
-                              Text('스테이션: ${stationName ?? ""}'),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('스테이션'),
+                                  Text(widget.rental.stationName),
+                                ],
+                              ),
                               const SizedBox(height: 8),
-                              Text('상품: ${accessoryName ?? ""}'),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('상품'),
+                                  Text(widget.rental.accessoryName),
+                                ],
+                              ),
                               const SizedBox(height: 8),
-                              Text('대여 시간: ${hours ?? 0}시간'),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('대여 시간'),
+                                  Text(
+                                      '${widget.rental.totalRentalTime.inHours}시간'),
+                                ],
+                              ),
                               const SizedBox(height: 8),
-                              Text('결제 금액: ${totalPrice ?? 0}원'),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('결제 수단', style: AppTheme.titleMedium),
-                              const SizedBox(height: 16),
-                              ...PaymentMethod.values.map((method) => ListTile(
-                                    contentPadding: EdgeInsets.zero,
-                                    leading: Radio<PaymentMethod>(
-                                      value: method,
-                                      groupValue: selectedMethod,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          selectedMethod = value!;
-                                        });
-                                      },
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('시간당 금액'),
+                                  Text(
+                                      '${widget.rental.totalPrice ~/ widget.rental.totalRentalTime.inHours}원'),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              const Divider(),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    '총 결제 금액',
+                                    style: AppTheme.titleMedium.copyWith(
+                                      color: AppColors.primary,
                                     ),
-                                    title: Text(_getPaymentMethodName(method)),
-                                    onTap: () {
-                                      setState(() {
-                                        selectedMethod = method;
-                                      });
-                                    },
-                                  )),
+                                  ),
+                                  Text(
+                                    '${widget.rental.totalPrice}원',
+                                    style: AppTheme.titleMedium.copyWith(
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ),
@@ -165,45 +269,24 @@ class _PaymentViewState extends State<PaymentView> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    '총 결제 금액: ${totalPrice ?? 0}원',
+                    '총 결제 금액: ${widget.rental.totalPrice}원',
                     style: AppTheme.titleMedium.copyWith(
                       color: AppColors.primary,
                     ),
                     textAlign: TextAlign.right,
                   ),
                   const SizedBox(height: 8),
-                  ElevatedButton(
-                    onPressed: !agreedToTerms
-                        ? null
-                        : () async {
-                            final rental = Rental(
-                              id: 'R${DateTime.now().millisecondsSinceEpoch}',
-                              userId: '',
-                              accessoryId: '',
-                              stationId: '',
-                              accessoryName: accessoryName ?? '',
-                              stationName: stationName ?? '',
-                              totalPrice: totalPrice ?? 0,
-                              status: RentalStatus.active,
-                              createdAt: DateTime.now(),
-                              updatedAt: DateTime.now(),
-                            );
-
-                            // 결제 완료 후 저장된 정보 삭제
-                            final storage = StorageService.instance;
-                            await Future.wait([
-                              storage.remove('selected_accessory_name'),
-                              storage.remove('selected_station_name'),
-                              storage.remove('selected_rental_duration'),
-                              storage.remove('selected_price'),
-                            ]);
-
-                            Navigator.of(context).pushReplacementNamed(
-                              Routes.paymentComplete,
-                              arguments: rental,
-                            );
-                          },
-                    child: const Text('결제하기'),
+                  GestureDetector(
+                    onTap: _handlePaymentButtonTap,
+                    child: Opacity(
+                      opacity: agreedToTerms ? 1.0 : 0.5,
+                      child: Image.asset(
+                        'assets/images/btn_send_regular.png',
+                        width: double.infinity,
+                        height: 48,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
                   ),
                 ],
               ),

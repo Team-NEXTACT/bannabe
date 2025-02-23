@@ -5,6 +5,8 @@ import '../viewmodels/qr_scan_viewmodel.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../app/routes.dart';
 import '../../../core/widgets/loading_animation.dart';
+import '../../../data/models/rental.dart';
+import './rental_duration_view.dart';
 
 class QRScanView extends StatefulWidget {
   final int rentalDuration;
@@ -73,11 +75,29 @@ class _QRScanViewState extends State<QRScanView> {
                 // 디버깅용 스킵 버튼
                 TextButton(
                   onPressed: () async {
+                    final dummyRental = Rental(
+                      id: 'dummy-${DateTime.now().millisecondsSinceEpoch}',
+                      userId: 'test-user-id',
+                      accessoryId: 'A1',
+                      stationId: 'S1',
+                      accessoryName: '보조배터리 10000mAh',
+                      stationName: '강남역점',
+                      totalPrice: 1000, // 시간당 1000원
+                      status: RentalStatus.active,
+                      createdAt: DateTime.now(),
+                      updatedAt: DateTime.now(),
+                    );
+
                     if (widget.isReturn) {
                       Navigator.of(context).pop(true);
                     } else {
-                      Navigator.of(context)
-                          .pushReplacementNamed(Routes.payment);
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (context) => RentalDurationView(
+                            rental: dummyRental,
+                          ),
+                        ),
+                      );
                     }
                   },
                   child: const Text(
