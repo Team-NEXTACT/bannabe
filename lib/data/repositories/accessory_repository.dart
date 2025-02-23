@@ -13,7 +13,7 @@ class AccessoryRepository {
         pricePerHour: 2000,
         category: AccessoryCategory.charger,
         isAvailable: true,
-        imageUrl: 'assets/images/charger-1.png',
+        imageUrl: 'assets/images/items/charger-1.png', // canva
       ),
       Accessory(
         id: 'charger-2',
@@ -22,7 +22,7 @@ class AccessoryRepository {
         pricePerHour: 1500,
         category: AccessoryCategory.charger,
         isAvailable: true,
-        imageUrl: 'assets/images/charger-2.png',
+        imageUrl: 'assets/images/items/charger-2.png', // canva
       ),
       Accessory(
         id: 'charger-3',
@@ -31,7 +31,8 @@ class AccessoryRepository {
         pricePerHour: 1000,
         category: AccessoryCategory.charger,
         isAvailable: true,
-        imageUrl: 'assets/images/charger-3.png',
+        imageUrl:
+            'assets/images/items/charger-3.png', // [Freepik] charger-usb-cable-type-c-white-isolated-background
       ),
       Accessory(
         id: 'charger-4',
@@ -40,7 +41,7 @@ class AccessoryRepository {
         pricePerHour: 1000,
         category: AccessoryCategory.charger,
         isAvailable: true,
-        imageUrl: 'assets/images/charger-4.png',
+        imageUrl: 'assets/images/items/charger-4.png', // GettyImages-1479104893
       ),
 
       // 케이블
@@ -51,7 +52,7 @@ class AccessoryRepository {
         pricePerHour: 1000,
         category: AccessoryCategory.cable,
         isAvailable: true,
-        imageUrl: 'assets/images/cable-1.png',
+        imageUrl: 'assets/images/items/cable-1.png', // GettyImages-478051415
       ),
       Accessory(
         id: 'cable-2',
@@ -60,7 +61,7 @@ class AccessoryRepository {
         pricePerHour: 1000,
         category: AccessoryCategory.cable,
         isAvailable: true,
-        imageUrl: 'assets/images/cable-2.png',
+        imageUrl: 'assets/images/items/cable-2.png', // canva
       ),
       Accessory(
         id: 'cable-3',
@@ -69,7 +70,7 @@ class AccessoryRepository {
         pricePerHour: 500,
         category: AccessoryCategory.cable,
         isAvailable: true,
-        imageUrl: 'assets/images/cable-3.png',
+        imageUrl: 'assets/images/items/cable-3.png', // canva
       ),
       Accessory(
         id: 'cable-4',
@@ -78,7 +79,8 @@ class AccessoryRepository {
         pricePerHour: 500,
         category: AccessoryCategory.cable,
         isAvailable: true,
-        imageUrl: 'assets/images/cable-4.png',
+        imageUrl:
+            'assets/images/items/cable-4.png', // [Freepik] usb-cable-type-c-white-isolated-background
       ),
 
       // 독
@@ -89,7 +91,7 @@ class AccessoryRepository {
         pricePerHour: 1500,
         category: AccessoryCategory.dock,
         isAvailable: true,
-        imageUrl: 'assets/images/dock-1.png',
+        imageUrl: 'assets/images/items/dock-1.png', // canva
       ),
       Accessory(
         id: 'dock-2',
@@ -98,7 +100,8 @@ class AccessoryRepository {
         pricePerHour: 1500,
         category: AccessoryCategory.dock,
         isAvailable: true,
-        imageUrl: 'assets/images/dock-2.png',
+        imageUrl:
+            'assets/images/items/dock-2.png', // [Freepik] usb-hubs-digital-device
       ),
       Accessory(
         id: 'dock-3',
@@ -107,7 +110,8 @@ class AccessoryRepository {
         pricePerHour: 2000,
         category: AccessoryCategory.dock,
         isAvailable: true,
-        imageUrl: 'assets/images/dock-3.png',
+        imageUrl:
+            'assets/images/items/dock-3.png', // [pexels] pexels-rann-vijay-677553-7742582
       ),
 
       // 보조배터리
@@ -118,7 +122,8 @@ class AccessoryRepository {
         pricePerHour: 3000,
         category: AccessoryCategory.powerBank,
         isAvailable: true,
-        imageUrl: 'assets/images/powerbank-1.png',
+        imageUrl:
+            'assets/images/items/powerbank-1.png', // [Freepik] png-power-bank-isolated-white-background
       ),
       Accessory(
         id: 'powerbank-2',
@@ -127,7 +132,8 @@ class AccessoryRepository {
         pricePerHour: 1500,
         category: AccessoryCategory.powerBank,
         isAvailable: true,
-        imageUrl: 'assets/images/powerbank-2.png',
+        imageUrl:
+            'assets/images/items/powerbank-2.png', // [Freepik] png-power-bank-isolated-white-background
       ),
 
       // 기타
@@ -138,7 +144,7 @@ class AccessoryRepository {
         pricePerHour: 1000,
         category: AccessoryCategory.etc,
         isAvailable: true,
-        imageUrl: 'assets/images/etc-1.png',
+        imageUrl: 'assets/images/items/etc-1.png', // canva
       ),
     ];
   }
