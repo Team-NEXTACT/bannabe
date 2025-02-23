@@ -40,7 +40,7 @@ class AccessoryRepository {
         description: '20W 고속 충전기',
         pricePerHour: 1000,
         category: AccessoryCategory.charger,
-        isAvailable: true,
+        isAvailable: false,
         imageUrl: 'assets/images/items/charger-4.png', // GettyImages-1479104893
       ),
 
@@ -78,7 +78,7 @@ class AccessoryRepository {
         description: '고속 데이터 전송',
         pricePerHour: 500,
         category: AccessoryCategory.cable,
-        isAvailable: true,
+        isAvailable: false,
         imageUrl:
             'assets/images/items/cable-4.png', // [Freepik] usb-cable-type-c-white-isolated-background
       ),
@@ -109,7 +109,7 @@ class AccessoryRepository {
         description: 'HDMI, USB, SD 카드 지원',
         pricePerHour: 2000,
         category: AccessoryCategory.dock,
-        isAvailable: true,
+        isAvailable: false,
         imageUrl:
             'assets/images/items/dock-3.png', // [pexels] pexels-rann-vijay-677553-7742582
       ),
@@ -131,7 +131,7 @@ class AccessoryRepository {
         description: '10000mAh, 25W',
         pricePerHour: 1500,
         category: AccessoryCategory.powerBank,
-        isAvailable: true,
+        isAvailable: false,
         imageUrl:
             'assets/images/items/powerbank-2.png', // [Freepik] png-power-bank-isolated-white-background
       ),
@@ -143,7 +143,7 @@ class AccessoryRepository {
         description: '레이저 포인터 내장',
         pricePerHour: 1000,
         category: AccessoryCategory.etc,
-        isAvailable: true,
+        isAvailable: false,
         imageUrl: 'assets/images/items/etc-1.png', // canva
       ),
     ];

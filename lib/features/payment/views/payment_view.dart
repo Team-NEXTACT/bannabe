@@ -76,39 +76,121 @@ class _PaymentViewState extends State<PaymentView> {
           showDialog(
             context: context,
             barrierDismissible: false,
-            builder: (context) => AlertDialog(
-              title: const Text('결제 진행 중'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 16),
-                  const Text('카카오페이 결제를 완료해주세요.'),
-                  const SizedBox(height: 8),
-                  const Text(
-                    '결제가 완료되면 자동으로 다음 화면으로 이동합니다.',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
+            builder: (context) => Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('취소'),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      'assets/images/bannabee.png',
+                      width: 60,
+                      height: 60,
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      '결제 진행 중',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            '${widget.rental.totalPrice}원',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '${widget.rental.accessoryName} (${widget.rental.totalRentalTime.inHours}시간)',
+                            style: const TextStyle(
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      '카카오페이 결제를 완료해주세요',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      '결제가 완료되면 아래 버튼을 눌러주세요',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              side: const BorderSide(color: AppColors.primary),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text('취소'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              Navigator.of(context).pushReplacementNamed(
+                                Routes.paymentComplete,
+                                arguments: widget.rental,
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              backgroundColor: AppColors.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text(
+                              '결제 완료',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pushReplacementNamed(
-                      Routes.paymentComplete,
-                      arguments: widget.rental,
-                    );
-                  },
-                  child: const Text('결제 완료'),
-                ),
-              ],
+              ),
             ),
           );
         }
@@ -207,7 +289,7 @@ class _PaymentViewState extends State<PaymentView> {
                                 children: [
                                   const Text('시간당 금액'),
                                   Text(
-                                      '${widget.rental.totalPrice ~/ widget.rental.totalRentalTime.inHours}원'),
+                                      '${widget.rental.totalRentalTime.inHours > 0 ? widget.rental.totalPrice ~/ widget.rental.totalRentalTime.inHours : widget.rental.totalPrice}원'),
                                 ],
                               ),
                               const SizedBox(height: 8),

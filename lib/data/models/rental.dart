@@ -86,9 +86,11 @@ class Rental {
     final actualDuration = updatedAt.difference(createdAt);
     final overdueDuration = actualDuration - rentalDuration;
     // 1.5배 연체료
-    return (overdueDuration.inHours *
-            (totalPrice ~/ rentalDuration.inHours) *
-            1.5)
+    return (overdueDuration.inHours > 0
+            ? (overdueDuration.inHours *
+                (totalPrice ~/ rentalDuration.inHours) *
+                1.5)
+            : 0)
         .toInt();
   }
 
@@ -102,7 +104,7 @@ class Rental {
   Duration get totalRentalTime {
     // 시간당 1000원으로 계산
     final hours = totalPrice ~/ 1000;
-    return Duration(hours: hours);
+    return Duration(hours: hours > 0 ? hours : 1); // 최소 1시간
   }
 
   String get formattedRentalTime {
@@ -110,9 +112,9 @@ class Rental {
     final hours = totalPrice ~/ 1000;
 
     if (status == RentalStatus.overdue) {
-      return '$hours시간 (연체)';
+      return '${hours > 0 ? hours : 1}시간 (연체)';
     } else {
-      return '$hours시간 이용';
+      return '${hours > 0 ? hours : 1}시간 이용';
     }
   }
 

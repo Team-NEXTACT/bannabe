@@ -23,22 +23,22 @@ class AppBottomNavigationBar extends StatelessWidget {
             Navigator.of(context).pushReplacementNamed(Routes.home);
             break;
           case 1:
-            Navigator.of(context).pushReplacementNamed(Routes.rental);
+            Navigator.of(context).pushReplacementNamed(Routes.map);
             break;
           case 2:
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) => const QRScanView(rentalDuration: 0, isReturn: false,),
+                builder: (context) => const QRScanView(
+                  rentalDuration: 0,
+                  isReturn: false,
+                ),
               ),
             );
             break;
           case 3:
-            final user = AuthService.instance.currentUser;
-            if (user?.email != null) {
-              Navigator.of(context).pushReplacementNamed(Routes.mypage);
-            } else {
-              Navigator.of(context).pushReplacementNamed(Routes.login);
-            }
+            // 테스트용 계정으로 마이페이지 접근
+            AuthService.instance.setTestUser('bannabee@naver.com');
+            Navigator.of(context).pushReplacementNamed(Routes.mypage);
             break;
         }
       },
@@ -50,9 +50,9 @@ class AppBottomNavigationBar extends StatelessWidget {
           label: '홈',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.shopping_bag_outlined),
-          activeIcon: Icon(Icons.shopping_bag),
-          label: '대여',
+          icon: Icon(Icons.map_outlined),
+          activeIcon: Icon(Icons.map),
+          label: '스테이션',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.qr_code_scanner),

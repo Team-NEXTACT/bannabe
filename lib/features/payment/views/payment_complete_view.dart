@@ -1,87 +1,156 @@
 import 'package:flutter/material.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_theme.dart';
 import '../../../data/models/rental.dart';
 import '../../../app/routes.dart';
-import '../../../core/constants/app_theme.dart';
-import '../../../core/services/storage_service.dart';
+import '../../../features/rental/views/active_rentals_view.dart';
 
 class PaymentCompleteView extends StatelessWidget {
   final Rental rental;
-  final _storageService = StorageService.instance;
 
-  PaymentCompleteView({
+  const PaymentCompleteView({
     super.key,
     required this.rental,
   });
-
-  Future<void> _clearRentalInfo() async {
-    // 대여 관련 저장된 정보 모두 삭제
-    await Future.wait([
-      _storageService.remove('selected_accessory_id'),
-      _storageService.remove('selected_station_id'),
-      _storageService.remove('selected_accessory_name'),
-      _storageService.remove('selected_station_name'),
-      _storageService.remove('selected_rental_duration'),
-      _storageService.remove('selected_price'),
-    ]);
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: DefaultTextStyle.merge(
-          style: const TextStyle(
-            fontSize: 15,
-            color: Colors.black87,
-            height: 1.5,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 20),
-                const Text(
-                  '결제가 완료되었습니다',
-                  style: AppTheme.headlineMedium,
-                  textAlign: TextAlign.center,
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Spacer(),
+              Image.asset(
+                'assets/images/bannabee.png',
+                width: 120,
+                height: 120,
+              ),
+              const SizedBox(height: 40),
+              const Text(
+                '결제가 완료되었습니다',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
                 ),
-                const SizedBox(height: 32),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Colors.grey[200]!,
+              ),
+              const SizedBox(height: 40),
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          '결제 금액',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.black54,
+                          ),
+                        ),
+                        Text(
+                          '${rental.totalPrice}원',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('대여 상품'),
+                        Text(rental.accessoryName),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('대여 시간'),
+                        Text('${rental.totalRentalTime.inHours}시간'),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('대여 장소'),
+                        Text(rental.stationName),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '대여 현황에서 자세한 내용을 확인할 수 있습니다',
+                style: AppTheme.bodyMedium.copyWith(
+                  color: Colors.grey,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.of(context).pushReplacementNamed(Routes.home);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: const BorderSide(color: AppColors.primary),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text('홈으로'),
                     ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('주문번호: ${rental.id}'),
-                      const SizedBox(height: 8),
-                      Text('결제금액: ${rental.totalPrice}원'),
-                      const SizedBox(height: 8),
-                      Text(
-                        '대여시간: ${rental.formattedRentalTime}',
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => ActiveRentalsView(
+                              newRental: rental,
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
-                    ],
+                      child: const Text(
+                        '대여 현황 보기',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-                const Spacer(),
-                ElevatedButton(
-                  onPressed: () async {
-                    await _clearRentalInfo();
-                    if (context.mounted) {
-                      Navigator.of(context).pushReplacementNamed(Routes.home);
-                    }
-                  },
-                  child: const Text('홈으로 돌아가기'),
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

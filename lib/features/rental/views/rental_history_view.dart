@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../data/models/rental.dart';
 import '../../../data/repositories/rental_repository.dart';
 import '../../../core/constants/app_theme.dart';
+import '../../../core/widgets/bottom_navigation_bar.dart';
 
 class RentalHistoryView extends StatefulWidget {
   const RentalHistoryView({super.key});
@@ -68,6 +69,7 @@ class _RentalHistoryViewState extends State<RentalHistoryView> {
                       },
                     ),
             ),
+      bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 3),
     );
   }
 

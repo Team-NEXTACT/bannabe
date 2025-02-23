@@ -1,12 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
+import 'package:flutter/foundation.dart';
 import '../../data/models/user.dart';
 import '../services/storage_service.dart';
+import '../../data/repositories/auth_repository.dart';
 
-class AuthService {
-  static late AuthService instance;
+class AuthService with ChangeNotifier {
+  static final AuthService _instance = AuthService._internal();
+  static AuthService get instance => _instance;
+
   static Future<void> initialize() async {
-    instance = AuthService();
-    await instance._init();
+    await _instance._init();
   }
 
   final fb_auth.FirebaseAuth _firebaseAuth = fb_auth.FirebaseAuth.instance;
@@ -14,6 +17,8 @@ class AuthService {
 
   User? get currentUser => _currentUser;
   bool get isAuthenticated => _currentUser != null;
+
+  AuthService._internal();
 
   Future<void> _init() async {
     await StorageService.instance.init();
@@ -116,5 +121,19 @@ class AuthService {
     } catch (e) {
       throw Exception('프로필 업데이트에 실패했습니다: $e');
     }
+  }
+
+  // 테스트용 사용자 설정
+  void setTestUser(String email) {
+    _currentUser = User(
+      id: 'test-user-id',
+      email: email,
+      name: '반나비',
+      phoneNumber: '010-1234-5678',
+      profileImageUrl: 'assets/images/profile.jpg',
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+    notifyListeners();
   }
 }

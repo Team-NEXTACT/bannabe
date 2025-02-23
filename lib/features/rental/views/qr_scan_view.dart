@@ -59,9 +59,12 @@ class _QRScanViewState extends State<QRScanView> {
               if (widget.isReturn) {
                 Navigator.of(context).pop(true);
               } else {
-                Navigator.of(context).pushReplacementNamed(
-                  Routes.payment,
-                  arguments: viewModel.rental,
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => RentalDurationView(
+                      rental: viewModel.rental!,
+                    ),
+                  ),
                 );
               }
             });
@@ -74,31 +77,27 @@ class _QRScanViewState extends State<QRScanView> {
               actions: [
                 // 디버깅용 스킵 버튼
                 TextButton(
-                  onPressed: () async {
-                    final dummyRental = Rental(
-                      id: 'dummy-${DateTime.now().millisecondsSinceEpoch}',
+                  onPressed: () {
+                    final rental = Rental(
+                      id: 'rental-${DateTime.now().millisecondsSinceEpoch}',
                       userId: 'test-user-id',
-                      accessoryId: 'A1',
+                      accessoryId: 'powerbank-1',
                       stationId: 'S1',
-                      accessoryName: '보조배터리 10000mAh',
+                      accessoryName: '노트북용 보조배터리',
                       stationName: '강남역점',
-                      totalPrice: 1000, // 시간당 1000원
+                      totalPrice: 1000,
                       status: RentalStatus.active,
                       createdAt: DateTime.now(),
                       updatedAt: DateTime.now(),
                     );
 
-                    if (widget.isReturn) {
-                      Navigator.of(context).pop(true);
-                    } else {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => RentalDurationView(
-                            rental: dummyRental,
-                          ),
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => RentalDurationView(
+                          rental: rental,
                         ),
-                      );
-                    }
+                      ),
+                    );
                   },
                   child: const Text(
                     '[DEV] 스킵',

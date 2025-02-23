@@ -62,18 +62,20 @@ class QRScanViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // QR 코드에서 액세서리 ID와 스테이션 ID 추출
+      // QR 코드에서 액세서리 ID와 스테이션 ID, 시간당 가격 추출
       final parts = qrCode.split('_');
-      if (parts.length != 2) {
+      if (parts.length != 3) {
         throw Exception('잘못된 QR 코드입니다.');
       }
 
       final scannedStationId = parts[0];
       final scannedAccessoryId = parts[1];
+      final pricePerHour = int.parse(parts[2]);
 
       // 액세서리와 스테이션 정보 조회
       final accessory = await _accessoryRepository.get(scannedAccessoryId);
-      final station = await _stationRepository.getStation(int.parse(scannedStationId));
+      final station =
+          await _stationRepository.getStation(int.parse(scannedStationId));
 
       if (!accessory.isAvailable) {
         throw Exception('현재 대여할 수 없는 물품입니다.');
@@ -90,7 +92,7 @@ class QRScanViewModel extends ChangeNotifier {
         stationId: scannedStationId,
         accessoryName: accessory.name,
         stationName: station.name,
-        totalPrice: (_rentalDuration * accessory.pricePerHour).toInt(),
+        totalPrice: pricePerHour,
         status: RentalStatus.active,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),

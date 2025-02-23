@@ -2,9 +2,15 @@ import 'package:flutter/material.dart';
 import '../../../data/models/rental.dart';
 import '../../../data/repositories/rental_repository.dart';
 import '../../../core/constants/app_theme.dart';
+import '../../../core/widgets/bottom_navigation_bar.dart';
 
 class ActiveRentalsView extends StatefulWidget {
-  const ActiveRentalsView({super.key});
+  final Rental? newRental;
+
+  const ActiveRentalsView({
+    super.key,
+    this.newRental,
+  });
 
   @override
   State<ActiveRentalsView> createState() => _ActiveRentalsViewState();
@@ -30,7 +36,12 @@ class _ActiveRentalsViewState extends State<ActiveRentalsView> {
       final rentals = await _rentalRepository.getActiveRentals();
 
       setState(() {
-        _rentals = rentals;
+        // 새로운 결제 기록이 있다면 리스트 최상단에 추가
+        if (widget.newRental != null) {
+          _rentals = [widget.newRental!, ...rentals];
+        } else {
+          _rentals = rentals;
+        }
         _isLoading = false;
       });
     } catch (e) {
@@ -68,6 +79,7 @@ class _ActiveRentalsViewState extends State<ActiveRentalsView> {
                       },
                     ),
             ),
+      bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 3),
     );
   }
 

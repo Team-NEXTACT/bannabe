@@ -32,8 +32,8 @@ class _RentalDetailViewState extends State<RentalDetailView> {
   void initState() {
     super.initState();
     _selectedStation = widget.station;
-    // 임시 데이터: 0~5개 랜덤 생성
-    _quantity = Random().nextInt(6);
+    // 임시 데이터: 1~5개 랜덤 생성
+    _quantity = Random().nextInt(5) + 1;
 
     // 초기 대여 시간 쿠키 생성
     _storageService.setInt('selected_rental_duration', _selectedHours);
@@ -57,7 +57,8 @@ class _RentalDetailViewState extends State<RentalDetailView> {
         // 스테이션 정보 불러오기
         if (savedStationId != null) {
           final stationRepository = StationRepository.instance;
-          final station = await stationRepository.getStation(int.parse(savedStationId));
+          final station =
+              await stationRepository.getStation(int.parse(savedStationId));
 
           if (station != null) {
             setState(() {
