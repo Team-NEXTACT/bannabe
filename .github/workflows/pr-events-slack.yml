@@ -1,0 +1,47 @@
+name: Slack Notification
+
+on:
+  pull_request:
+    types:
+      - opened
+      - closed
+      - synchronize
+    branches:
+      - main
+
+jobs:
+  slack_nofitication:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Slack Notification on PR Opened
+        if: github.event.action == 'opened'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          author_name: 'bannabe-app'
+          fields: repo,eventName,ref,workflow,job
+          text: "🚀 *새로운 PR이 생성되었습니다!* \n👤 *작성자:* `${{ github.event.pull_request.user.login }}`\n📌 *제목:* `${{ github.event.pull_request.title }} (#${{ github.event.pull_request.number }})` \n🔗 *[PR 확인하기]:* ${{ github.event.pull_request.html_url }}"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send Slack Notification on PR Updated (New Commit)
+        if: github.event.action == 'synchronize'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          author_name: 'bannabe-app'
+          fields: repo,eventName,ref,workflow,job
+          text: "📝 *PR에 새로운 Commit이 추가되었습니다!* \n👤 *작성자:* `${{ github.event.pull_request.user.login }}`\n📌 *제목:* `${{ github.event.pull_request.title }} (#${{ github.event.pull_request.number }})` \n🔗 *[PR 확인하기]:* ${{ github.event.pull_request.html_url }}"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Send Slack Notification on PR Merged
+        if: github.event.action == 'closed' && github.event.pull_request.merged == true
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          author_name: 'bannabe-app'
+          fields: repo,eventName,ref,workflow,job
+          text: "🎉 *PR이 Merge되었습니다!* \n👤 *작성자:* `${{ github.event.pull_request.user.login }}`\n✅ *Merge한 사람:* `${{ github.actor }}`\n📌 *제목:* `${{ github.event.pull_request.title }} (#${{ github.event.pull_request.number }})` \n🔗 *[Merge PR 확인하기]*: ${{ github.event.pull_request.html_url }}"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
