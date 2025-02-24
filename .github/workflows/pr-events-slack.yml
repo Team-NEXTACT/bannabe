@@ -13,6 +13,14 @@ jobs:
   slack_nofitication:
     runs-on: ubuntu-latest
     steps:
+      - name: Check Secrets Availability
+        run: |
+          if [ -z "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
+            echo "❌ SLACK_WEBHOOK_URL is NOT set!"
+            exit 1
+          else
+            echo "✅ SLACK_WEBHOOK_URL is set!"
+          fi
       - name: Send Slack Notification on PR Opened
         if: github.event.action == 'opened'
         uses: 8398a7/action-slack@v3
