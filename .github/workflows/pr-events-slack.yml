@@ -7,7 +7,9 @@ on:
       - closed
       - synchronize
     branches:
-      - main
+      - not/used
+
+# forked repository trigger workflow에서는 secrets를 사용할 수 없으므로 사용하지 않는 branch로 변경
 
 jobs:
   slack_nofitication:
