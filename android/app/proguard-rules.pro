@@ -1,0 +1,4 @@
+-keep class com.example.** { *; }
+-keep class com.journeyapps.** { *; }
+-keep class com.google.zxing.** { *; }
+-keep class com.google.mlkit.** { *; }
