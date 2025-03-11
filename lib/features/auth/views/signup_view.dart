@@ -74,27 +74,18 @@ class _SignupViewState extends State<SignupView> {
     });
 
     try {
-      // TODO: 서버 연동 시 아래 코드로 대체
-      // final response = await AuthService.instance.signUp(
-      //   email: email,
-      //   password: password,
-      // );
-
-      // 임시 시나리오: 이메일에 'test'가 포함되어 있으면 중복으로 처리
-      await Future.delayed(const Duration(seconds: 1));
-      if (email.contains('test')) {
-        throw Exception('중복된 이메일입니다.');
-      }
+      // 서버에 회원가입 요청
+      await AuthService.instance.signUp(
+        email: email,
+        password: password,
+      );
 
       if (mounted) {
         Navigator.of(context).pushReplacementNamed(Routes.signupComplete);
       }
     } catch (e) {
       setState(() {
-        // 서버 응답의 message 필드를 사용하거나, 기본 에러 메시지 표시
-        _error = e.toString().contains('중복된 이메일')
-            ? '중복된 이메일입니다.'
-            : '회원가입 중 오류가 발생했습니다.';
+        _error = '이미 가입된 이메일입니다.';
       });
     } finally {
       if (mounted) {

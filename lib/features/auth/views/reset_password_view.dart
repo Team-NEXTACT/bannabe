@@ -20,7 +20,7 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   String? _email;
-  String? _code;
+  String? _authCode;
 
   @override
   void didChangeDependencies() {
@@ -29,10 +29,10 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     if (args != null) {
       _email = args['email'] as String?;
-      _code = args['code'] as String?;
+      _authCode = args['authCode'] as String?;
     }
 
-    if (_email == null || _code == null) {
+    if (_email == null || _authCode == null) {
       // 필요한 정보가 없으면 비밀번호 찾기 페이지로 이동
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.of(context).pushReplacementNamed(Routes.forgotPassword);
@@ -52,14 +52,6 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
     final password = _passwordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
 
-    // 비밀번호 일치 여부 확인
-    if (password != confirmPassword) {
-      setState(() {
-        _error = '비밀번호가 일치하지 않습니다.';
-      });
-      return;
-    }
-
     // 비밀번호 형식 검사
     final passwordRegExp = RegExp(
       r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,20}$',
@@ -77,8 +69,9 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
     });
 
     try {
-      final result =
-          await AuthService.instance.resetPassword(_email!, _code!, password);
+      // 서버에 비밀번호 재설정 요청 (이메일, 인증코드, 새 비밀번호, 새 비밀번호 확인)
+      final result = await AuthService.instance
+          .resetPassword(_email!, _authCode!, password, confirmPassword);
 
       if (result) {
         // 비밀번호 재설정 성공 시 로그인 페이지로 이동
@@ -95,7 +88,8 @@ class _ResetPasswordViewState extends State<ResetPasswordView> {
       }
     } catch (e) {
       setState(() {
-        _error = '비밀번호 재설정에 실패했습니다: ${e.toString()}';
+        // 서버에서 반환된 메시지를 그대로 표시
+        _error = e.toString();
       });
     } finally {
       setState(() {

@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import '../../data/models/user.dart';
@@ -13,7 +12,6 @@ class AuthService with ChangeNotifier {
     await _instance._init();
   }
 
-  final fb_auth.FirebaseAuth _firebaseAuth = fb_auth.FirebaseAuth.instance;
   final Dio _dio = Dio(BaseOptions(
     baseUrl: "http://10.0.2.2:8080/v1/auth",
     connectTimeout: const Duration(seconds: 5),
@@ -28,41 +26,45 @@ class AuthService with ChangeNotifier {
 
   Future<void> _init() async {
     await StorageService.instance.init();
-    final fbUser = _firebaseAuth.currentUser;
-    if (fbUser != null) {
-      _currentUser = User(
-        id: fbUser.uid,
-        email: fbUser.email ?? '',
-        name: fbUser.displayName ?? '사용자',
-        phoneNumber: fbUser.phoneNumber ?? '',
-        profileImageUrl: '', // 프로필 이미지 URL은 별도로 관리 필요
-        createdAt: DateTime.now(), // Firebase에 저장된 시간으로 업데이트 가능
-        updatedAt: DateTime.now(),
-        rentals: [],
-      );
+    // 저장된 사용자 정보가 있는지 확인
+    final savedUser = await StorageService.instance.getObject('user');
+    if (savedUser != null) {
+      try {
+        _currentUser = User.fromJson(savedUser);
+      } catch (e) {
+        // 저장된 사용자 정보가 유효하지 않은 경우
+        await StorageService.instance.remove('user');
+      }
     }
   }
 
   Future<void> signInWithEmail(String email, String password) async {
     try {
-      final credential = await _firebaseAuth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      // API 호출로 로그인 요청
+      final response = await _dio.post('/login', data: {
+        'email': email,
+        'password': password,
+      });
 
-      final fbUser = credential.user;
-      if (fbUser != null) {
+      if (response.statusCode == 200 && response.data != null) {
+        // 서버 응답에서 사용자 ID만 추출
+        final userData = response.data;
+
+        // 사용자 정보 설정 (ID만 저장)
         _currentUser = User(
-          id: fbUser.uid,
-          email: fbUser.email ?? '',
-          name: fbUser.displayName ?? '사용자',
-          phoneNumber: fbUser.phoneNumber ?? '',
-          profileImageUrl: '', // 프로필 이미지 URL 추가 가능
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          rentals: [],
+          id: userData['id'] ?? '',
+          email: email,
         );
+
+        // 토큰이 있다면 저장
+        if (userData['token'] != null) {
+          await StorageService.instance.setString('token', userData['token']);
+        }
+
         await StorageService.instance.setObject('user', _currentUser!.toJson());
+        notifyListeners();
+      } else {
+        throw Exception('로그인 실패: 서버 응답 오류');
       }
     } catch (e) {
       throw Exception('로그인 실패: ${e.toString()}');
@@ -70,33 +72,18 @@ class AuthService with ChangeNotifier {
   }
 
   Future<void> signUp({
-    required String name,
     required String email,
     required String password,
-    required String phoneNumber,
   }) async {
     try {
-      final credential = await _firebaseAuth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      // API 호출로 회원가입 요청
+      final response = await _dio.post('/register', data: {
+        'email': email,
+        'password': password,
+      });
 
-      final fbUser = credential.user;
-      if (fbUser != null) {
-        // 사용자 이름 업데이트
-        await fbUser.updateDisplayName(name);
-
-        _currentUser = User(
-          id: fbUser.uid,
-          email: fbUser.email ?? '',
-          name: name,
-          phoneNumber: phoneNumber,
-          profileImageUrl: '', // 프로필 이미지 URL 추가 가능
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-          rentals: [],
-        );
-        await StorageService.instance.setObject('user', _currentUser!.toJson());
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw Exception('회원가입 실패: 서버 응답 오류 (${response.statusCode})');
       }
     } catch (e) {
       throw Exception('회원가입 실패: ${e.toString()}');
@@ -105,27 +92,12 @@ class AuthService with ChangeNotifier {
 
   Future<void> signOut() async {
     try {
-      await _firebaseAuth.signOut();
       _currentUser = null;
       await StorageService.instance.remove('user');
+      await StorageService.instance.remove('token');
+      notifyListeners();
     } catch (e) {
       throw Exception('로그아웃 실패: ${e.toString()}');
-    }
-  }
-
-  Future<void> updateProfile({
-    required String name,
-    required String phoneNumber,
-  }) async {
-    final user = _firebaseAuth.currentUser;
-    if (user == null) throw Exception('로그인이 필요합니다.');
-
-    try {
-      await user.updateDisplayName(name);
-      // TODO: phoneNumber 업데이트는 Firebase에서 직접 지원하지 않으므로
-      // 필요한 경우 Firestore나 다른 데이터베이스에 저장
-    } catch (e) {
-      throw Exception('프로필 업데이트에 실패했습니다: $e');
     }
   }
 
@@ -134,8 +106,7 @@ class AuthService with ChangeNotifier {
     _currentUser = User(
       id: 'test-user-id',
       email: email,
-      name: '반나비',
-      phoneNumber: '010-1234-5678',
+      nickname: '반나비',
       profileImageUrl: 'assets/images/profile.jpg',
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
@@ -160,11 +131,11 @@ class AuthService with ChangeNotifier {
   }
 
   // 인증코드 검증
-  Future<bool> verifyCode(String email, String code) async {
+  Future<bool> verifyCode(String email, String authCode) async {
     try {
       final response = await _dio.post('/verify-code', data: {
         'email': email,
-        'code': code,
+        'authCode': authCode,
       });
 
       if (response.statusCode == 200) {
@@ -177,13 +148,14 @@ class AuthService with ChangeNotifier {
   }
 
   // 비밀번호 변경(재설정)
-  Future<bool> resetPassword(
-      String email, String code, String newPassword) async {
+  Future<bool> resetPassword(String email, String authCode, String newPassword,
+      String newPasswordConfirm) async {
     try {
       final response = await _dio.put('/reset-password', data: {
         'email': email,
-        'code': code,
+        'authCode': authCode,
         'newPassword': newPassword,
+        'newPasswordConfirm': newPasswordConfirm,
       });
 
       if (response.statusCode == 200) {
@@ -191,7 +163,16 @@ class AuthService with ChangeNotifier {
       }
       return false;
     } catch (e) {
-      throw Exception('비밀번호 재설정 실패: ${e.toString()}');
+      // DioError에서 서버 응답 메시지 추출
+      if (e is DioException && e.response != null) {
+        final responseData = e.response!.data;
+        if (responseData is Map<String, dynamic> &&
+            responseData.containsKey('message')) {
+          // Exception 객체 대신 문자열을 직접 throw
+          throw responseData['message'] as String;
+        }
+      }
+      throw '비밀번호 재설정 실패: ${e.toString()}';
     }
   }
 }

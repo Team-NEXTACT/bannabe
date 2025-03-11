@@ -69,8 +69,7 @@ class AuthService {
     _currentUser = User(
       id: 'test-user-id',
       email: 'test@example.com',
-      name: '테스트 사용자',
-      phoneNumber: '010-1234-5678',
+      nickname: '테스트 사용자',
       profileImageUrl: 'https://example.com/images/profile.jpg',
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),

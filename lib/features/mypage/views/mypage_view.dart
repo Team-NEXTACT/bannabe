@@ -67,7 +67,7 @@ class MyPageView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${user?.name}님',
+                            '${user?.nickname}님',
                             style: AppTheme.titleMedium.copyWith(
                               color: Colors.white,
                               fontSize: 22,

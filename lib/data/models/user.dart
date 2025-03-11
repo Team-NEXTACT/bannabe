@@ -3,21 +3,19 @@ import 'rental.dart';
 class User {
   final String id;
   final String email;
-  final String name;
-  final String phoneNumber;
-  final String profileImageUrl;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final String? nickname;
+  final String? profileImageUrl;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
   final List<Rental> rentals;
 
   User({
     required this.id,
     required this.email,
-    required this.name,
-    required this.phoneNumber,
-    required this.profileImageUrl,
-    required this.createdAt,
-    required this.updatedAt,
+    this.nickname,
+    this.profileImageUrl,
+    this.createdAt,
+    this.updatedAt,
     this.rentals = const [],
   });
 
@@ -25,11 +23,14 @@ class User {
     return User(
       id: json['id'] as String,
       email: json['email'] as String,
-      name: json['name'] as String,
-      phoneNumber: json['phoneNumber'] as String,
-      profileImageUrl: json['profileImageUrl'] as String,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      nickname: json['nickname'] as String?,
+      profileImageUrl: json['profileImageUrl'] as String?,
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'] as String)
+          : null,
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'] as String)
+          : null,
       rentals: json['rentals'] != null
           ? (json['rentals'] as List)
               .map((rental) => Rental.fromJson(rental))
@@ -39,23 +40,25 @@ class User {
   }
 
   Map<String, dynamic> toJson() {
-    return {
+    final Map<String, dynamic> data = {
       'id': id,
       'email': email,
-      'name': name,
-      'phoneNumber': phoneNumber,
-      'profileImageUrl': profileImageUrl,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
-      'rentals': rentals.map((rental) => rental.toJson()).toList(),
     };
+
+    if (nickname != null) data['nickname'] = nickname;
+    if (profileImageUrl != null) data['profileImageUrl'] = profileImageUrl;
+    if (createdAt != null) data['createdAt'] = createdAt!.toIso8601String();
+    if (updatedAt != null) data['updatedAt'] = updatedAt!.toIso8601String();
+    if (rentals.isNotEmpty)
+      data['rentals'] = rentals.map((rental) => rental.toJson()).toList();
+
+    return data;
   }
 
   User copyWith({
     String? id,
     String? email,
-    String? name,
-    String? phoneNumber,
+    String? nickname,
     String? profileImageUrl,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -64,8 +67,7 @@ class User {
     return User(
       id: id ?? this.id,
       email: email ?? this.email,
-      name: name ?? this.name,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
+      nickname: nickname ?? this.nickname,
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,

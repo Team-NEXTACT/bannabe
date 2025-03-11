@@ -15,7 +15,7 @@ class ForgotPasswordView extends StatefulWidget {
 
 class _ForgotPasswordViewState extends State<ForgotPasswordView> {
   final _emailController = TextEditingController();
-  final _codeController = TextEditingController();
+  final _authCodeController = TextEditingController();
   bool _isLoading = false;
   bool _codeSent = false;
   String? _error;
@@ -24,7 +24,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
   @override
   void dispose() {
     _emailController.dispose();
-    _codeController.dispose();
+    _authCodeController.dispose();
     super.dispose();
   }
 
@@ -63,7 +63,9 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
       }
     } catch (e) {
       setState(() {
-        _error = '인증코드 발송에 실패했습니다: ${e.toString()}';
+        // 서버에 존재하지 않은 이메일 입력 시 오류 처리
+        // _error = '인증코드 발송에 실패했습니다: ${e.toString()}';
+        _error = '존재하지 않는 이메일입니다.';
       });
     } finally {
       setState(() {
@@ -75,9 +77,9 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
   // 인증코드 검증
   Future<void> _verifyCode() async {
     final email = _emailController.text.trim();
-    final code = _codeController.text.trim();
+    final authCode = _authCodeController.text.trim();
 
-    if (code.isEmpty) {
+    if (authCode.isEmpty) {
       setState(() {
         _error = '인증코드를 입력해주세요.';
         _success = null;
@@ -87,7 +89,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
 
     // 인증코드 형식 검사 (6글자의 영어 대소문자, 숫자)
     final codeRegExp = RegExp(r'^[A-Za-z0-9]{6}$');
-    if (!codeRegExp.hasMatch(code)) {
+    if (!codeRegExp.hasMatch(authCode)) {
       setState(() {
         _error = '인증코드는 6글자의 영어 대소문자, 숫자로 이루어져 있습니다.';
         _success = null;
@@ -102,7 +104,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
     });
 
     try {
-      final result = await AuthService.instance.verifyCode(email, code);
+      final result = await AuthService.instance.verifyCode(email, authCode);
 
       if (result) {
         // 인증 성공 시 비밀번호 재설정 페이지로 이동
@@ -111,7 +113,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
             Routes.resetPassword,
             arguments: {
               'email': email,
-              'code': code,
+              'authCode': authCode,
             },
           );
         }
@@ -122,7 +124,9 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
       }
     } catch (e) {
       setState(() {
-        _error = '인증코드 검증에 실패했습니다: ${e.toString()}';
+        // 올바르지 않은 인증코드 입력
+        //_error = '인증코드 검증에 실패했습니다: ${e.toString()}';
+        _error = '인증코드가 올바르지 않습니다.';
       });
     } finally {
       setState(() {
@@ -178,7 +182,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
               const SizedBox(height: 16),
               if (_codeSent) ...[
                 TextField(
-                  controller: _codeController,
+                  controller: _authCodeController,
                   keyboardType: TextInputType.text,
                   maxLength: 6,
                   textCapitalization: TextCapitalization.characters,

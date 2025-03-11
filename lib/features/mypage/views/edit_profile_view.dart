@@ -20,7 +20,7 @@ class _EditProfileViewState extends State<EditProfileView> {
     super.initState();
     final user = AuthService.instance.currentUser;
     if (user != null) {
-      _nameController.text = user.name;
+      _nameController.text = user.nickname ?? '';
     }
   }
 
@@ -30,6 +30,7 @@ class _EditProfileViewState extends State<EditProfileView> {
     super.dispose();
   }
 
+/*
   Future<void> _save() async {
     final name = _nameController.text.trim();
 
@@ -68,7 +69,7 @@ class _EditProfileViewState extends State<EditProfileView> {
       }
     }
   }
-
+*/
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -155,7 +156,8 @@ class _EditProfileViewState extends State<EditProfileView> {
               ],
               const SizedBox(height: 32),
               ElevatedButton(
-                onPressed: _isLoading ? null : _save,
+                // onPressed: _isLoading ? null : _save,
+                onPressed: () {},
                 child: _isLoading
                     ? const SizedBox(
                         height: 20,
