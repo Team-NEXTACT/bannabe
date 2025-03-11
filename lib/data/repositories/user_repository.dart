@@ -8,8 +8,7 @@ class UserRepository implements BaseRepository<User> {
     return User(
       id: id,
       email: '',
-      name: '',
-      phoneNumber: '',
+      nickname: '',
       profileImageUrl: '',
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
@@ -45,8 +44,7 @@ class UserRepository implements BaseRepository<User> {
     return User(
       id: '',
       email: email,
-      name: '',
-      phoneNumber: '',
+      nickname: '',
       profileImageUrl: '',
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),

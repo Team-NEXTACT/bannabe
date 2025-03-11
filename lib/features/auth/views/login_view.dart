@@ -27,7 +27,10 @@ class _LoginViewState extends State<LoginView> {
   }
 
   Future<void> _login() async {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
       setState(() {
         _error = '이메일과 비밀번호를 입력해주세요.';
       });
@@ -40,10 +43,9 @@ class _LoginViewState extends State<LoginView> {
     });
 
     try {
-      await AuthService.instance.signInWithEmail(
-        _emailController.text,
-        _passwordController.text,
-      );
+      // 서버에 로그인 요청
+      await AuthService.instance.signInWithEmail(email, password);
+
       if (mounted) {
         Navigator.of(context).pushReplacementNamed(Routes.home);
       }
@@ -173,6 +175,19 @@ class _LoginViewState extends State<LoginView> {
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pushNamed(Routes.forgotPassword);
+                      },
+                      child: const Text(
+                        '비밀번호 찾기',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
                 ),

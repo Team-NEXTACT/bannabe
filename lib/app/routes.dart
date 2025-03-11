@@ -18,4 +18,6 @@ class Routes {
   static const String rentalStatus = '/rental/status';
   static const String notifications = '/notifications';
   static const String stationMap = '/station-map';
+  static const String forgotPassword = '/forgot-password';
+  static const String resetPassword = '/reset-password';
 }
