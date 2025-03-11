@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_theme.dart';
 import '../../../core/widgets/loading_animation.dart';
@@ -79,6 +80,16 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
     if (code.isEmpty) {
       setState(() {
         _error = '인증코드를 입력해주세요.';
+        _success = null;
+      });
+      return;
+    }
+
+    // 인증코드 형식 검사 (6글자의 영어 대소문자, 숫자)
+    final codeRegExp = RegExp(r'^[A-Za-z0-9]{6}$');
+    if (!codeRegExp.hasMatch(code)) {
+      setState(() {
+        _error = '인증코드는 6글자의 영어 대소문자, 숫자로 이루어져 있습니다.';
         _success = null;
       });
       return;
@@ -168,9 +179,13 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
               if (_codeSent) ...[
                 TextField(
                   controller: _codeController,
-                  keyboardType: TextInputType.number,
+                  keyboardType: TextInputType.text,
+                  maxLength: 6,
+                  textCapitalization: TextCapitalization.characters,
                   decoration: InputDecoration(
-                    hintText: '인증코드 입력',
+                    hintText: '인증코드 입력 (6자리)',
+                    helperText: '영어 대소문자, 숫자 조합 6자리',
+                    counterText: '',
                     contentPadding: const EdgeInsets.all(16),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -181,6 +196,9 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                       borderSide: const BorderSide(color: AppColors.lightGrey),
                     ),
                   ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
+                  ],
                   autocorrect: false,
                 ),
                 const SizedBox(height: 16),
