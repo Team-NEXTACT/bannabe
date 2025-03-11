@@ -257,6 +257,25 @@ class MyPageView extends StatelessWidget {
                   ),
                 ),
               ),
+
+              // 디버깅용 로그인 페이지 이동 버튼
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).pushNamed(Routes.login);
+                },
+                icon: const Icon(Icons.login, color: AppColors.primary),
+                label: const Text('로그인 페이지로 이동'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: AppColors.primary.withOpacity(0.5)),
+                  ),
+                ),
+              ),
             ],
           ),
         ),

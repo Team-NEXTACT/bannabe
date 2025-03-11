@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:flutter/foundation.dart';
+import 'package:dio/dio.dart';
 import '../../data/models/user.dart';
 import '../services/storage_service.dart';
 import '../../data/repositories/auth_repository.dart';
@@ -13,6 +14,11 @@ class AuthService with ChangeNotifier {
   }
 
   final fb_auth.FirebaseAuth _firebaseAuth = fb_auth.FirebaseAuth.instance;
+  final Dio _dio = Dio(BaseOptions(
+    baseUrl: "http://10.0.2.2:8080/v1/auth",
+    connectTimeout: const Duration(seconds: 5),
+    receiveTimeout: const Duration(seconds: 3),
+  ));
   User? _currentUser;
 
   User? get currentUser => _currentUser;
@@ -135,5 +141,57 @@ class AuthService with ChangeNotifier {
       updatedAt: DateTime.now(),
     );
     notifyListeners();
+  }
+
+  // 인증코드 메일발송
+  Future<bool> sendVerificationCode(String email) async {
+    try {
+      final response = await _dio.post('/send-code', data: {
+        'email': email,
+      });
+
+      if (response.statusCode == 200) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      throw Exception('인증코드 발송 실패: ${e.toString()}');
+    }
+  }
+
+  // 인증코드 검증
+  Future<bool> verifyCode(String email, String code) async {
+    try {
+      final response = await _dio.post('/verify-code', data: {
+        'email': email,
+        'code': code,
+      });
+
+      if (response.statusCode == 200) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      throw Exception('인증코드 검증 실패: ${e.toString()}');
+    }
+  }
+
+  // 비밀번호 변경(재설정)
+  Future<bool> resetPassword(
+      String email, String code, String newPassword) async {
+    try {
+      final response = await _dio.put('/reset-password', data: {
+        'email': email,
+        'code': code,
+        'newPassword': newPassword,
+      });
+
+      if (response.statusCode == 200) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      throw Exception('비밀번호 재설정 실패: ${e.toString()}');
+    }
   }
 }

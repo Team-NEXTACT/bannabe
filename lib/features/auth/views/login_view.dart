@@ -174,6 +174,19 @@ class _LoginViewState extends State<LoginView> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pushNamed(Routes.forgotPassword);
+                      },
+                      child: const Text(
+                        '비밀번호 찾기',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),

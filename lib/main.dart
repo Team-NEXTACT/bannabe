@@ -11,6 +11,8 @@ import 'features/auth/views/login_view.dart';
 import 'features/auth/views/signup_complete_view.dart';
 import 'features/auth/views/signup_view.dart';
 import 'features/auth/views/terms_view.dart';
+import 'features/auth/views/forgot_password_view.dart';
+import 'features/auth/views/reset_password_view.dart';
 import 'features/home/views/home_view.dart';
 import 'features/map/views/map_view.dart';
 import 'features/mypage/views/edit_profile_view.dart';
@@ -110,6 +112,8 @@ class MyApp extends StatelessWidget {
         Routes.signup: (context) => const SignupView(),
         Routes.signupComplete: (context) => const SignupCompleteView(),
         Routes.noticeList: (context) => const NoticeListView(),
+        Routes.forgotPassword: (context) => const ForgotPasswordView(),
+        Routes.resetPassword: (context) => const ResetPasswordView(),
       },
     );
   }
