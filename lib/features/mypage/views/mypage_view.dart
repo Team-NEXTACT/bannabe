@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_theme.dart';
 import '../../../core/services/auth_service.dart';
@@ -9,6 +10,14 @@ import '../../../features/rental/views/rental_history_view.dart';
 
 class MyPageView extends StatelessWidget {
   const MyPageView({super.key});
+
+  // URL 실행 함수
+  Future<void> _launchURL(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      throw Exception('Could not launch $url');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +97,7 @@ class MyPageView extends StatelessWidget {
                         Navigator.of(context).pushNamed(Routes.editProfile);
                       },
                       icon: const Icon(
-                        Icons.edit,
+                        Icons.settings,
                         color: Colors.white,
                       ),
                     ),
@@ -232,7 +241,7 @@ class MyPageView extends StatelessWidget {
                           '1:1 채팅상담',
                           Icons.chat_outlined,
                           onPressed: () {
-                            // TODO: 채팅상담 페이지로 이동
+                            _launchURL('http://pf.kakao.com/_uRFKn');
                           },
                         ),
                       ],
