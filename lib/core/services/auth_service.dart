@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import '../../data/models/user.dart';
 import '../services/storage_service.dart';
-import '../../data/repositories/auth_repository.dart';
+import '../services/token_service.dart';
 
 class AuthService with ChangeNotifier {
   static final AuthService _instance = AuthService._internal();
@@ -26,14 +26,26 @@ class AuthService with ChangeNotifier {
 
   Future<void> _init() async {
     await StorageService.instance.init();
+
+    // 토큰이 있는지 확인
+    final hasToken = await TokenService.instance.hasAccessToken();
+    if (!hasToken) {
+      // 토큰이 없으면 저장된 사용자 정보도 삭제
+      await StorageService.instance.remove('user');
+      _currentUser = null;
+      return;
+    }
+
     // 저장된 사용자 정보가 있는지 확인
     final savedUser = await StorageService.instance.getObject('user');
     if (savedUser != null) {
       try {
         _currentUser = User.fromJson(savedUser);
+        notifyListeners();
       } catch (e) {
         // 저장된 사용자 정보가 유효하지 않은 경우
         await StorageService.instance.remove('user');
+        _currentUser = null;
       }
     }
   }
@@ -47,19 +59,24 @@ class AuthService with ChangeNotifier {
       });
 
       if (response.statusCode == 200 && response.data != null) {
-        // 서버 응답에서 사용자 ID만 추출
         final userData = response.data;
 
-        // 사용자 정보 설정 (ID만 저장)
+        // JWT 토큰 저장
+        if (userData['accessToken'] != null &&
+            userData['refreshToken'] != null) {
+          await TokenService.instance.setTokens(
+            accessToken: userData['accessToken'],
+            refreshToken: userData['refreshToken'],
+          );
+        }
+
+        // 사용자 정보 설정
         _currentUser = User(
           id: userData['id'] ?? '',
           email: email,
+          nickname: userData['nickname'],
+          profileImageUrl: userData['profileImage'],
         );
-
-        // 토큰이 있다면 저장
-        if (userData['token'] != null) {
-          await StorageService.instance.setString('token', userData['token']);
-        }
 
         await StorageService.instance.setObject('user', _currentUser!.toJson());
         notifyListeners();
@@ -92,12 +109,44 @@ class AuthService with ChangeNotifier {
 
   Future<void> signOut() async {
     try {
+      // 토큰 삭제
+      await TokenService.instance.clearTokens();
+
+      // 사용자 정보 삭제
       _currentUser = null;
       await StorageService.instance.remove('user');
-      await StorageService.instance.remove('token');
       notifyListeners();
     } catch (e) {
       throw Exception('로그아웃 실패: ${e.toString()}');
+    }
+  }
+
+  // 사용자 정보 가져오기
+  Future<void> fetchUserProfile() async {
+    try {
+      final response = await _dio.get('/profile');
+
+      if (response.statusCode == 200 && response.data != null) {
+        final userData = response.data;
+
+        _currentUser = User(
+          id: userData['id'] ?? '',
+          email: userData['email'] ?? '',
+          nickname: userData['nickname'],
+          profileImageUrl: userData['profileImage'],
+          createdAt: userData['createdAt'] != null
+              ? DateTime.parse(userData['createdAt'])
+              : null,
+          updatedAt: userData['updatedAt'] != null
+              ? DateTime.parse(userData['updatedAt'])
+              : null,
+        );
+
+        await StorageService.instance.setObject('user', _currentUser!.toJson());
+        notifyListeners();
+      }
+    } catch (e) {
+      print('사용자 정보 가져오기 실패: ${e.toString()}');
     }
   }
 

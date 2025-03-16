@@ -5,8 +5,6 @@ import '../../../core/widgets/bottom_navigation_bar.dart';
 import '../../../core/widgets/loading_animation.dart';
 import '../../../app/routes.dart';
 import '../../../core/widgets/map_view.dart';
-import '../../../core/services/storage_service.dart';
-import '../../../data/models/rental.dart';
 import 'dart:async';
 
 class HomeView extends StatefulWidget {
