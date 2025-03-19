@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_theme.dart';
 import '../../../core/services/auth_service.dart';
+import '../../../core/services/user_service.dart';
 import '../../../core/widgets/bottom_navigation_bar.dart';
 import '../../../app/routes.dart';
 import '../../../features/rental/views/active_rentals_view.dart';
@@ -22,7 +23,7 @@ class _MyPageViewState extends State<MyPageView> {
     super.initState();
     // 페이지가 로드될 때 사용자 프로필 정보를 가져옵니다
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      AuthService.instance.fetchUserProfile();
+      UserService.instance.fetchUserProfile();
     });
   }
 
@@ -36,12 +37,12 @@ class _MyPageViewState extends State<MyPageView> {
 
   @override
   Widget build(BuildContext context) {
-    // AuthService를 리스닝하여 사용자 정보 변경 시 UI 업데이트
+    // UserService를 리스닝하여 사용자 정보 변경 시 UI 업데이트
     return ChangeNotifierProvider.value(
-      value: AuthService.instance,
-      child: Consumer<AuthService>(
-        builder: (context, authService, _) {
-          final user = authService.currentUser;
+      value: UserService.instance,
+      child: Consumer<UserService>(
+        builder: (context, userService, _) {
+          final user = userService.currentUser;
 
           return Scaffold(
             appBar: AppBar(
