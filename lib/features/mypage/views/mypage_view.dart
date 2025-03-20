@@ -80,22 +80,37 @@ class _MyPageViewState extends State<MyPageView> {
                       child: Row(
                         children: [
                           Container(
-                            width: 70,
-                            height: 70,
+                            width: 80,
+                            height: 80,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
-                              image: DecorationImage(
-                                image: user?.profileImageUrl != null &&
-                                        user!.profileImageUrl!.isNotEmpty
-                                    ? (user.profileImageUrl!.startsWith('http')
-                                        ? NetworkImage(user.profileImageUrl!)
-                                            as ImageProvider
-                                        : AssetImage(user.profileImageUrl!))
-                                    : const AssetImage(
-                                        'assets/images/profile.jpg'),
-                                fit: BoxFit.cover,
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 2,
                               ),
+                            ),
+                            child: ClipOval(
+                              child: user?.profileImageUrl != null &&
+                                      user!.profileImageUrl!.isNotEmpty
+                                  ? Image(
+                                      image: user.profileImageUrl!
+                                              .startsWith('http')
+                                          ? NetworkImage(user.profileImageUrl!)
+                                          : AssetImage(user.profileImageUrl!)
+                                              as ImageProvider,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return Image.asset(
+                                          'assets/images/profile.jpg',
+                                          fit: BoxFit.cover,
+                                        );
+                                      },
+                                    )
+                                  : Image.asset(
+                                      'assets/images/profile.jpg',
+                                      fit: BoxFit.cover,
+                                    ),
                             ),
                           ),
                           const SizedBox(width: 20),
