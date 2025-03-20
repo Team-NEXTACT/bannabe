@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_theme.dart';
 import '../../../core/services/auth_service.dart';
+import '../../../core/services/user_service.dart';
 
 class ChangeNicknameView extends StatefulWidget {
   const ChangeNicknameView({super.key});
@@ -31,7 +32,7 @@ class _ChangeNicknameViewState extends State<ChangeNicknameView> {
     super.dispose();
   }
 
-  void _changeNickname() {
+  void _changeNickname() async {
     final nickname = _nicknameController.text.trim();
 
     if (nickname.isEmpty) {
@@ -41,20 +42,34 @@ class _ChangeNicknameViewState extends State<ChangeNicknameView> {
       return;
     }
 
+    if (nickname.length > 8) {
+      setState(() {
+        _error = '닉네임은 8자 이하여야 합니다.';
+      });
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
-    // TODO: 닉네임 변경 API 연동
-    Future.delayed(const Duration(seconds: 1), () {
+    try {
+      await UserService.instance.changeNickname(nickname);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('닉네임이 변경되었습니다.')),
         );
         Navigator.of(context).pop();
       }
-    });
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override

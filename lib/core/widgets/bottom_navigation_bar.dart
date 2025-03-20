@@ -15,7 +15,7 @@ class AppBottomNavigationBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       currentIndex: currentIndex,
-      onTap: (index) {
+      onTap: (index) async {
         if (index == currentIndex) return;
 
         switch (index) {
@@ -36,9 +36,11 @@ class AppBottomNavigationBar extends StatelessWidget {
             );
             break;
           case 3:
-            // 테스트용 계정으로 마이페이지 접근
-            AuthService.instance.setTestUser('bannabee@naver.com');
-            Navigator.of(context).pushReplacementNamed(Routes.mypage);
+            if (AuthService.instance.isAuthenticated) {
+              Navigator.of(context).pushReplacementNamed(Routes.mypage);
+            } else {
+              Navigator.of(context).pushReplacementNamed(Routes.login);
+            }
             break;
         }
       },

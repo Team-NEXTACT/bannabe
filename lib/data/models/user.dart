@@ -1,7 +1,7 @@
 import 'rental.dart';
 
 class User {
-  final String id;
+  final String? id;
   final String email;
   final String? nickname;
   final String? profileImageUrl;
@@ -10,7 +10,7 @@ class User {
   final List<Rental> rentals;
 
   User({
-    required this.id,
+    this.id,
     required this.email,
     this.nickname,
     this.profileImageUrl,
@@ -21,16 +21,14 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] as String,
-      email: json['email'] as String,
-      nickname: json['nickname'] as String?,
-      profileImageUrl: json['profileImageUrl'] as String?,
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'] as String)
-          : null,
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'] as String)
-          : null,
+      id: json['id'],
+      email: json['email'],
+      nickname: json['nickname'],
+      profileImageUrl: json['profileImage'],
+      createdAt:
+          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      updatedAt:
+          json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
       rentals: json['rentals'] != null
           ? (json['rentals'] as List)
               .map((rental) => Rental.fromJson(rental))
@@ -40,19 +38,14 @@ class User {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {
+    return {
       'id': id,
       'email': email,
+      'nickname': nickname,
+      'profileImage': profileImageUrl,
+      'createdAt': createdAt?.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
     };
-
-    if (nickname != null) data['nickname'] = nickname;
-    if (profileImageUrl != null) data['profileImageUrl'] = profileImageUrl;
-    if (createdAt != null) data['createdAt'] = createdAt!.toIso8601String();
-    if (updatedAt != null) data['updatedAt'] = updatedAt!.toIso8601String();
-    if (rentals.isNotEmpty)
-      data['rentals'] = rentals.map((rental) => rental.toJson()).toList();
-
-    return data;
   }
 
   User copyWith({

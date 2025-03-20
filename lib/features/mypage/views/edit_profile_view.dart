@@ -199,14 +199,6 @@ class _EditProfileViewState extends State<EditProfileView> {
                             fit: BoxFit.cover,
                           ),
                         ),
-                        child: (_selectedImage == null &&
-                                user?.profileImageUrl == null)
-                            ? const Icon(
-                                Icons.person,
-                                size: 40,
-                                color: Colors.grey,
-                              )
-                            : null,
                       ),
                     ],
                   ),

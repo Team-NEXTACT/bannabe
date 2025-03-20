@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_theme.dart';
+import '../../../core/services/user_service.dart';
 
 class ChangePasswordView extends StatefulWidget {
   const ChangePasswordView({super.key});
@@ -27,7 +28,7 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
     super.dispose();
   }
 
-  void _changePassword() {
+  void _changePassword() async {
     final currentPassword = _currentPasswordController.text.trim();
     final newPassword = _newPasswordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
@@ -52,20 +53,40 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
       return;
     }
 
+    // 새 비밀번호와 확인 비밀번호 일치 여부 확인
+    if (newPassword != confirmPassword) {
+      setState(() {
+        _error = '새 비밀번호와 확인 비밀번호가 일치하지 않습니다.';
+      });
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
-    // TODO: 비밀번호 변경 API 연동
-    Future.delayed(const Duration(seconds: 1), () {
+    try {
+      await UserService.instance.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+        newPasswordConfirm: confirmPassword,
+      );
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('비밀번호가 변경되었습니다.')),
         );
         Navigator.of(context).pop();
       }
-    });
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
