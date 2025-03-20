@@ -100,7 +100,9 @@ class ApiService {
   Future<Response> get(String path,
       {Map<String, dynamic>? queryParameters}) async {
     try {
-      return await _dio.get(path, queryParameters: queryParameters);
+      final options = await _getRequestOptions();
+      return await _dio.get(path,
+          queryParameters: queryParameters, options: options);
     } on DioException {
       rethrow;
     }
@@ -109,7 +111,8 @@ class ApiService {
   // POST 요청
   Future<Response> post(String path, {dynamic data}) async {
     try {
-      return await _dio.post(path, data: data);
+      final options = await _getRequestOptions();
+      return await _dio.post(path, data: data, options: options);
     } on DioException {
       rethrow;
     }
@@ -118,7 +121,8 @@ class ApiService {
   // PUT 요청
   Future<Response> put(String path, {dynamic data}) async {
     try {
-      return await _dio.put(path, data: data);
+      final options = await _getRequestOptions();
+      return await _dio.put(path, data: data, options: options);
     } on DioException {
       rethrow;
     }
@@ -127,9 +131,39 @@ class ApiService {
   // DELETE 요청
   Future<Response> delete(String path, {dynamic data}) async {
     try {
-      return await _dio.delete(path, data: data);
+      final options = await _getRequestOptions();
+      return await _dio.delete(path, data: data, options: options);
     } on DioException {
       rethrow;
     }
+  }
+
+  // PATCH 요청
+  Future<Response> patch(String path, {dynamic data}) async {
+    try {
+      print('ApiService PATCH 요청:');
+      print('URL: $_baseUrl$path');
+      print('Data: $data');
+
+      final options = await _getRequestOptions();
+      print('Headers: ${options.headers}');
+
+      final response = await _dio.patch(path, data: data, options: options);
+      return response;
+    } on DioException {
+      rethrow;
+    }
+  }
+
+  // 요청 옵션 가져오기
+  Future<Options> _getRequestOptions() async {
+    final accessToken = await TokenService.instance.getAccessToken();
+    return Options(
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+      },
+    );
   }
 }
