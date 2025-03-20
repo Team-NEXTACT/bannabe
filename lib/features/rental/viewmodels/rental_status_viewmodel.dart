@@ -21,7 +21,7 @@ class RentalStatusViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final user = await AuthService.instance.currentUser;
+      final user = AuthService.instance.currentUser;
       if (user == null) {
         _error = '로그인이 필요합니다';
         return;

@@ -38,10 +38,15 @@ class MyPageViewModel extends ChangeNotifier {
         return;
       }
 
-      final userId = _authService.currentUser!.id;
-      final user = await _userRepository.get(userId);
-      _user = user;
-      _error = null;
+      final currentUser = _authService.currentUser;
+      if (currentUser?.id == null) {
+        _error = '사용자 ID를 찾을 수 없습니다.';
+        _user = null;
+      } else {
+        final user = await _userRepository.get(currentUser!.id!);
+        _user = user;
+        _error = null;
+      }
     } catch (e) {
       _error = '사용자 정보를 불러오는데 실패했습니다.';
       _user = null;

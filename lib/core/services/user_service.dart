@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import '../../data/models/user.dart';
 import '../services/storage_service.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 
 class UserService with ChangeNotifier {
   static final UserService _instance = UserService._internal();
@@ -17,16 +18,32 @@ class UserService with ChangeNotifier {
   Future<void> fetchUserProfile() async {
     try {
       final response = await ApiService.instance.get('/users/me');
+      print('프로필 조회 응답: ${response.data}');
 
       if (response.statusCode == 200 && response.data != null) {
-        final userData = response.data;
-        _currentUser = User.fromJson(userData);
-        await StorageService.instance.setObject('user', _currentUser!.toJson());
-        notifyListeners();
+        final responseData = response.data;
+
+        if (responseData['success'] == true && responseData['data'] != null) {
+          final userData = responseData['data'];
+          _currentUser = User.fromJson(userData);
+          await StorageService.instance
+              .setObject('user', _currentUser!.toJson());
+
+          // AuthService의 currentUser도 업데이트
+          AuthService.instance.updateCurrentUser(_currentUser!);
+
+          notifyListeners();
+        } else {
+          throw '사용자 정보 조회 실패: ${responseData['message'] ?? '알 수 없는 오류'}';
+        }
       }
     } catch (e) {
       print('사용자 정보 가져오기 실패: ${e.toString()}');
+      // 에러 발생 시 저장된 사용자 정보 로드
       _currentUser = await _getCurrentUser();
+      if (_currentUser != null) {
+        AuthService.instance.updateCurrentUser(_currentUser!);
+      }
       notifyListeners();
     }
   }
@@ -34,43 +51,33 @@ class UserService with ChangeNotifier {
   // 닉네임 변경
   Future<void> changeNickname(String nickname) async {
     try {
-      print('닉네임 변경 요청 - URL: /users/me/nickname');
-      print('요청 데이터: ${{'nickname': nickname}}');
-
       final response = await ApiService.instance.patch(
         '/users/me/nickname',
         data: {'nickname': nickname},
       );
 
-      print('응답 상태 코드: ${response.statusCode}');
-      print('응답 데이터: ${response.data}');
-      print('응답 헤더: ${response.headers}');
-
       if (response.statusCode == 200) {
+        // 현재 사용자 정보 업데이트
         final currentUser = await _getCurrentUser();
         if (currentUser != null) {
           final updatedUser = currentUser.copyWith(nickname: nickname);
           await StorageService.instance.setObject('user', updatedUser.toJson());
           _currentUser = updatedUser;
+
+          // AuthService의 currentUser도 업데이트
+          AuthService.instance.updateCurrentUser(updatedUser);
+
           notifyListeners();
         }
       } else {
         throw Exception('닉네임 변경 실패: 서버 응답 오류');
       }
     } catch (e) {
-      print('에러 상세 정보:');
-      if (e is DioException) {
-        print('요청 데이터: ${e.requestOptions.data}');
-        print('요청 헤더: ${e.requestOptions.headers}');
-        print('응답 상태 코드: ${e.response?.statusCode}');
-        print('응답 데이터: ${e.response?.data}');
-
-        if (e.response != null) {
-          final responseData = e.response!.data;
-          if (responseData is Map<String, dynamic> &&
-              responseData.containsKey('message')) {
-            throw responseData['message'] as String;
-          }
+      if (e is DioException && e.response != null) {
+        final responseData = e.response!.data;
+        if (responseData is Map<String, dynamic> &&
+            responseData.containsKey('message')) {
+          throw responseData['message'] as String;
         }
       }
       throw '닉네임 변경 실패: ${e.toString()}';

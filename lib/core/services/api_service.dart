@@ -28,11 +28,30 @@ class ApiService {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          print('인터셉터 - 요청 전:');
+          print('URL: ${options.path}');
+          print('Headers before: ${options.headers}');
+
           // 액세스 토큰이 있으면 헤더에 추가
           final accessToken = await TokenService.instance.getAccessToken();
-          if (accessToken != null) {
+          print('가져온 액세스 토큰: $accessToken');
+
+          if (accessToken != null && accessToken.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $accessToken';
+            print('토큰 추가됨');
+          } else {
+            print('토큰이 null이거나 비어있음');
+            // 토큰이 없으면 로그인 페이지로 이동
+            _navigateToLogin();
+            return handler.reject(
+              DioException(
+                requestOptions: options,
+                error: '인증 토큰이 없습니다.',
+              ),
+            );
           }
+
+          print('Headers after: ${options.headers}');
           return handler.next(options);
         },
         onError: (DioException error, handler) async {
@@ -100,9 +119,7 @@ class ApiService {
   Future<Response> get(String path,
       {Map<String, dynamic>? queryParameters}) async {
     try {
-      final options = await _getRequestOptions();
-      return await _dio.get(path,
-          queryParameters: queryParameters, options: options);
+      return await _dio.get(path, queryParameters: queryParameters);
     } on DioException {
       rethrow;
     }
@@ -111,8 +128,7 @@ class ApiService {
   // POST 요청
   Future<Response> post(String path, {dynamic data}) async {
     try {
-      final options = await _getRequestOptions();
-      return await _dio.post(path, data: data, options: options);
+      return await _dio.post(path, data: data);
     } on DioException {
       rethrow;
     }
@@ -121,8 +137,7 @@ class ApiService {
   // PUT 요청
   Future<Response> put(String path, {dynamic data}) async {
     try {
-      final options = await _getRequestOptions();
-      return await _dio.put(path, data: data, options: options);
+      return await _dio.put(path, data: data);
     } on DioException {
       rethrow;
     }
@@ -131,8 +146,7 @@ class ApiService {
   // DELETE 요청
   Future<Response> delete(String path, {dynamic data}) async {
     try {
-      final options = await _getRequestOptions();
-      return await _dio.delete(path, data: data, options: options);
+      return await _dio.delete(path, data: data);
     } on DioException {
       rethrow;
     }
@@ -145,25 +159,12 @@ class ApiService {
       print('URL: $_baseUrl$path');
       print('Data: $data');
 
-      final options = await _getRequestOptions();
-      print('Headers: ${options.headers}');
-
-      final response = await _dio.patch(path, data: data, options: options);
+      final response = await _dio.patch(path, data: data);
+      print('응답 상태 코드: ${response.statusCode}');
+      print('응답 데이터: ${response.data}');
       return response;
     } on DioException {
       rethrow;
     }
-  }
-
-  // 요청 옵션 가져오기
-  Future<Options> _getRequestOptions() async {
-    final accessToken = await TokenService.instance.getAccessToken();
-    return Options(
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        if (accessToken != null) 'Authorization': 'Bearer $accessToken',
-      },
-    );
   }
 }

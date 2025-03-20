@@ -52,38 +52,61 @@ class AuthService with ChangeNotifier {
 
   Future<void> signInWithEmail(String email, String password) async {
     try {
+      print('로그인 시도 - 이메일: $email');
+
       // API 호출로 로그인 요청
       final response = await _dio.post('/login', data: {
         'email': email,
         'password': password,
       });
 
+      print('로그인 응답: ${response.data}');
+
       if (response.statusCode == 200 && response.data != null) {
-        final userData = response.data;
+        final responseData = response.data;
+        print('로그인 성공 - 응답 데이터: $responseData');
 
-        // JWT 토큰 저장
-        if (userData['accessToken'] != null &&
-            userData['refreshToken'] != null) {
-          await TokenService.instance.setTokens(
-            accessToken: userData['accessToken'],
-            refreshToken: userData['refreshToken'],
-          );
+        if (responseData['success'] == true && responseData['data'] != null) {
+          final userData = responseData['data'];
+
+          // JWT 토큰 저장
+          if (userData['accessToken'] != null &&
+              userData['refreshToken'] != null) {
+            print('토큰 저장 시도');
+            await TokenService.instance.setTokens(
+              accessToken: userData['accessToken'],
+              refreshToken: userData['refreshToken'],
+            );
+            print('토큰 저장 완료');
+
+            // 저장된 토큰 확인
+            final savedToken = await TokenService.instance.getAccessToken();
+            print('저장 후 확인한 액세스 토큰: $savedToken');
+
+            // 사용자 정보 설정
+            _currentUser = User(
+              id: userData['id'] ?? '',
+              email: email,
+              nickname: userData['nickname'],
+              profileImageUrl: userData['profileImage'],
+            );
+
+            await StorageService.instance
+                .setObject('user', _currentUser!.toJson());
+            notifyListeners();
+          } else {
+            print(
+                '토큰 누락: accessToken=${userData['accessToken']}, refreshToken=${userData['refreshToken']}');
+            throw Exception('로그인 실패: 토큰 정보가 없습니다.');
+          }
+        } else {
+          throw Exception('로그인 실패: 잘못된 응답 형식');
         }
-
-        // 사용자 정보 설정
-        _currentUser = User(
-          id: userData['id'] ?? '',
-          email: email,
-          nickname: userData['nickname'],
-          profileImageUrl: userData['profileImage'],
-        );
-
-        await StorageService.instance.setObject('user', _currentUser!.toJson());
-        notifyListeners();
       } else {
         throw Exception('로그인 실패: 서버 응답 오류');
       }
     } catch (e) {
+      print('로그인 에러: ${e.toString()}');
       throw Exception('로그인 실패: ${e.toString()}');
     }
   }
@@ -223,5 +246,11 @@ class AuthService with ChangeNotifier {
       }
       throw '비밀번호 재설정 실패: ${e.toString()}';
     }
+  }
+
+  // 현재 사용자 정보 업데이트
+  void updateCurrentUser(User user) {
+    _currentUser = user;
+    notifyListeners();
   }
 }

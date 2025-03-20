@@ -7,7 +7,7 @@ enum RentalStatus {
 
 class Rental {
   final String id;
-  final String userId;
+  final String? userId;
   final String accessoryId;
   final String stationId;
   final String accessoryName;
@@ -21,7 +21,7 @@ class Rental {
 
   Rental({
     required this.id,
-    required this.userId,
+    this.userId,
     required this.accessoryId,
     required this.stationId,
     required this.accessoryName,
@@ -37,7 +37,7 @@ class Rental {
   factory Rental.fromJson(Map<String, dynamic> json) {
     return Rental(
       id: json['id'] as String,
-      userId: json['userId'] as String,
+      userId: json['userId'] as String?,
       accessoryId: json['accessoryId'] as String,
       stationId: json['stationId'] as String,
       accessoryName: json['accessoryName'] as String,
