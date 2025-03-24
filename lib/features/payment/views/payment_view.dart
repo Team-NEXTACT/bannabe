@@ -340,37 +340,100 @@ class _PaymentViewState extends State<PaymentView> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 24),
+                      // 결제 금액 및 결제 수단 선택
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppColors.lightGrey),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  '총 결제 금액',
+                                  style: AppTheme.titleMedium.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  '${widget.rental.totalPrice}원',
+                                  style: AppTheme.titleMedium.copyWith(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                            // 카드 결제 버튼
+                            Opacity(
+                              opacity: agreedToTerms ? 1.0 : 0.5,
+                              child: ElevatedButton(
+                                onPressed: agreedToTerms
+                                    ? () {
+                                        // TODO: 카드 결제 구현
+                                        print('카드 결제 버튼 클릭');
+                                      }
+                                    : null,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: Colors.black,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    side: const BorderSide(
+                                        color: AppColors.lightGrey),
+                                  ),
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.credit_card),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      '신용/체크카드 결제',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // 디버깅용 카카오페이 결제 버튼
+                      if (true) // TODO: 배포 전 삭제
+                        Column(
+                          children: [
+                            const SizedBox(height: 32),
+                            GestureDetector(
+                              onTap: agreedToTerms
+                                  ? _handlePaymentButtonTap
+                                  : null,
+                              child: Opacity(
+                                opacity: agreedToTerms ? 1.0 : 0.5,
+                                child: Image.asset(
+                                  'assets/images/btn_send_regular.png',
+                                  width: double.infinity,
+                                  height: 44,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    '총 결제 금액: ${widget.rental.totalPrice}원',
-                    style: AppTheme.titleMedium.copyWith(
-                      color: AppColors.primary,
-                    ),
-                    textAlign: TextAlign.right,
-                  ),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: _handlePaymentButtonTap,
-                    child: Opacity(
-                      opacity: agreedToTerms ? 1.0 : 0.5,
-                      child: Image.asset(
-                        'assets/images/btn_send_regular.png',
-                        width: double.infinity,
-                        height: 44,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ),
           ],
