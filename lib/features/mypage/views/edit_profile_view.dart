@@ -7,6 +7,7 @@ import '../../../core/constants/app_theme.dart';
 import '../../../core/services/auth_service.dart';
 import 'change_nickname_view.dart';
 import 'change_password_view.dart';
+import 'bookmarked_stations_view.dart';
 
 class EditProfileView extends StatefulWidget {
   const EditProfileView({super.key});
@@ -55,10 +56,10 @@ class _EditProfileViewState extends State<EditProfileView> {
       await _picker.pickImage(source: ImageSource.camera);
 
       // 이미지 선택 후 처리는 추후 구현 예정
-    setState(() {
+      setState(() {
         _success = '카메라 촬영 완료. 이미지 처리 기능 추후 구현 예정';
-      _error = null;
-    });
+        _error = null;
+      });
     } catch (e) {
       setState(() {
         _error = '카메라 접근 중 오류가 발생했습니다: ${e.toString()}';
@@ -98,7 +99,7 @@ class _EditProfileViewState extends State<EditProfileView> {
 
   // 이미지 삭제
   void _deleteImage() {
-        setState(() {
+    setState(() {
       _selectedImage = null;
       _success = '이미지 삭제 기능 추후 구현 예정';
       _error = null;
@@ -187,12 +188,12 @@ class _EditProfileViewState extends State<EditProfileView> {
                 children: [
                   // 프로필 이미지
                   Stack(
-                  children: [
-                    Container(
+                    children: [
+                      Container(
                         width: 80,
                         height: 80,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
                           border: Border.all(
                             color: Colors.white,
                             width: 2,
@@ -217,7 +218,7 @@ class _EditProfileViewState extends State<EditProfileView> {
                                 )
                               : Image.asset(
                                   'assets/images/profile.jpg',
-                          fit: BoxFit.cover,
+                                  fit: BoxFit.cover,
                                 ),
                         ),
                       ),
@@ -275,10 +276,10 @@ class _EditProfileViewState extends State<EditProfileView> {
                       label: const Text('닉네임 변경'),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
                       ),
                     ),
-                  ],
+                  ),
+                ],
               ),
 
               const SizedBox(height: 32),
@@ -298,6 +299,44 @@ class _EditProfileViewState extends State<EditProfileView> {
                     children: [
                       const Text(
                         '비밀번호 변경',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16,
+                        color: Colors.grey[600],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // 4. 북마크한 스테이션 관리 페이지로 이동하는 필드
+              InkWell(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const BookmarkedStationsView(),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.lightGrey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        '북마크한 스테이션 관리',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
