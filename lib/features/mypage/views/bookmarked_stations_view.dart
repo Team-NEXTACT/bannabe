@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_theme.dart';
+import '../../../data/models/bookmark_response.dart';
+import '../../../core/services/user_service.dart';
 
 class BookmarkedStationsView extends StatefulWidget {
   const BookmarkedStationsView({super.key});
@@ -12,7 +14,7 @@ class BookmarkedStationsView extends StatefulWidget {
 class _BookmarkedStationsViewState extends State<BookmarkedStationsView> {
   bool _isLoading = false;
   String? _error;
-  List<Map<String, dynamic>> _bookmarkedStations = []; // 임시 데이터 구조
+  List<BookmarkStation> _bookmarkedStations = [];
 
   @override
   void initState() {
@@ -27,34 +29,20 @@ class _BookmarkedStationsViewState extends State<BookmarkedStationsView> {
     });
 
     try {
-      // TODO: API 호출하여 북마크한 스테이션 목록 가져오기
-      // 임시 데이터
-      await Future.delayed(const Duration(seconds: 1));
-      _bookmarkedStations = [
-        {
-          'id': '1',
-          'name': '강남역 1번 출구',
-          'address': '서울특별시 강남구 강남대로 396',
-        },
-        {
-          'id': '2',
-          'name': '신논현역 4번 출구',
-          'address': '서울특별시 강남구 봉은사로 102',
-        },
-      ];
-
+      final bookmarks = await UserService.instance.getBookmarkedStations();
       setState(() {
+        _bookmarkedStations = bookmarks;
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _error = '북마크한 스테이션을 불러오는데 실패했습니다.';
+        _error = e.toString();
       });
     }
   }
 
-  Future<void> _removeBookmark(String stationId) async {
+  Future<void> _removeBookmark(int bookmarkId) async {
     // 삭제 확인 다이얼로그 표시
     final bool? shouldDelete = await showDialog<bool>(
       context: context,
@@ -83,11 +71,10 @@ class _BookmarkedStationsViewState extends State<BookmarkedStationsView> {
     }
 
     try {
-      // TODO: API 호출하여 북마크 삭제
-      await Future.delayed(const Duration(milliseconds: 500));
+      await UserService.instance.removeBookmark(bookmarkId);
       setState(() {
         _bookmarkedStations
-            .removeWhere((station) => station['id'] == stationId);
+            .removeWhere((station) => station.bookmarkId == bookmarkId);
       });
 
       if (mounted) {
@@ -101,9 +88,9 @@ class _BookmarkedStationsViewState extends State<BookmarkedStationsView> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('북마크 삭제에 실패했습니다.'),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Text(e.toString()),
+            duration: const Duration(seconds: 2),
           ),
         );
       }
@@ -168,32 +155,22 @@ class _BookmarkedStationsViewState extends State<BookmarkedStationsView> {
                               vertical: 12,
                             ),
                             title: Text(
-                              station['name'],
+                              station.name,
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                            subtitle: Text(
-                              station['address'],
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                              ),
-                            ),
                             trailing: IconButton(
                               icon: const Icon(Icons.bookmark),
                               color: AppColors.primary,
-                              onPressed: () => _removeBookmark(station['id']),
+                              onPressed: () =>
+                                  _removeBookmark(station.bookmarkId),
                             ),
                           ),
                         );
                       },
                     ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}';
   }
 }

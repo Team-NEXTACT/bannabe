@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import '../../data/models/user.dart';
+import '../../data/models/bookmark_response.dart';
 import '../services/storage_service.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
@@ -126,5 +127,51 @@ class UserService with ChangeNotifier {
       }
     }
     return null;
+  }
+
+  // 북마크한 스테이션 목록 조회
+  Future<List<BookmarkStation>> getBookmarkedStations() async {
+    try {
+      final response =
+          await ApiService.instance.get('/users/me/stations/bookmark');
+
+      if (response.statusCode == 200 && response.data != null) {
+        final bookmarkResponse = BookmarkResponse.fromJson(response.data);
+        return bookmarkResponse.data.bookmarks;
+      } else {
+        throw Exception('북마크 목록을 불러오는데 실패했습니다.');
+      }
+    } catch (e) {
+      if (e is DioException && e.response != null) {
+        final responseData = e.response!.data;
+        if (responseData is Map<String, dynamic> &&
+            responseData.containsKey('message')) {
+          throw responseData['message'] as String;
+        }
+      }
+      throw '북마크 목록을 불러오는데 실패했습니다: ${e.toString()}';
+    }
+  }
+
+  // 북마크 삭제
+  Future<void> removeBookmark(int bookmarkId) async {
+    try {
+      final response = await ApiService.instance.delete(
+        '/users/me/stations/bookmark/$bookmarkId',
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('북마크 삭제에 실패했습니다.');
+      }
+    } catch (e) {
+      if (e is DioException && e.response != null) {
+        final responseData = e.response!.data;
+        if (responseData is Map<String, dynamic> &&
+            responseData.containsKey('message')) {
+          throw responseData['message'] as String;
+        }
+      }
+      throw '북마크 삭제에 실패했습니다: ${e.toString()}';
+    }
   }
 }
