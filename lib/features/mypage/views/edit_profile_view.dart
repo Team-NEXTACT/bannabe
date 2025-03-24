@@ -55,10 +55,10 @@ class _EditProfileViewState extends State<EditProfileView> {
       await _picker.pickImage(source: ImageSource.camera);
 
       // 이미지 선택 후 처리는 추후 구현 예정
-      setState(() {
+    setState(() {
         _success = '카메라 촬영 완료. 이미지 처리 기능 추후 구현 예정';
-        _error = null;
-      });
+      _error = null;
+    });
     } catch (e) {
       setState(() {
         _error = '카메라 접근 중 오류가 발생했습니다: ${e.toString()}';
@@ -98,7 +98,7 @@ class _EditProfileViewState extends State<EditProfileView> {
 
   // 이미지 삭제
   void _deleteImage() {
-    setState(() {
+        setState(() {
       _selectedImage = null;
       _success = '이미지 삭제 기능 추후 구현 예정';
       _error = null;
@@ -187,17 +187,38 @@ class _EditProfileViewState extends State<EditProfileView> {
                 children: [
                   // 프로필 이미지
                   Stack(
-                    children: [
-                      Container(
+                  children: [
+                    Container(
                         width: 80,
                         height: 80,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.grey[200],
-                          image: const DecorationImage(
-                            image: AssetImage('assets/images/profile.jpg'),
-                            fit: BoxFit.cover,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white,
+                            width: 2,
                           ),
+                        ),
+                        child: ClipOval(
+                          child: user?.profileImageUrl != null &&
+                                  user!.profileImageUrl!.isNotEmpty
+                              ? Image(
+                                  image:
+                                      user.profileImageUrl!.startsWith('http')
+                                          ? NetworkImage(user.profileImageUrl!)
+                                          : AssetImage(user.profileImageUrl!)
+                                              as ImageProvider,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Image.asset(
+                                      'assets/images/profile.jpg',
+                                      fit: BoxFit.cover,
+                                    );
+                                  },
+                                )
+                              : Image.asset(
+                                  'assets/images/profile.jpg',
+                          fit: BoxFit.cover,
+                                ),
                         ),
                       ),
                     ],
@@ -254,10 +275,10 @@ class _EditProfileViewState extends State<EditProfileView> {
                       label: const Text('닉네임 변경'),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
               ),
 
               const SizedBox(height: 32),
