@@ -6,7 +6,6 @@ import '../../../data/models/accessory.dart';
 import '../../../data/models/station.dart';
 import '../../../app/routes.dart';
 import '../../../data/repositories/station_repository.dart';
-import 'dart:math'; // 임시 데이터 생성용
 
 class RentalDetailView extends StatefulWidget {
   final Accessory accessory;
@@ -26,20 +25,17 @@ class _RentalDetailViewState extends State<RentalDetailView> {
   final _storageService = StorageService.instance;
   Station? _selectedStation;
   int _selectedHours = 1;
-  late final int _quantity; // 악세사리 수량
 
   @override
   void initState() {
     super.initState();
     _selectedStation = widget.station;
-    // 임시 데이터: 1~5개 랜덤 생성
-    _quantity = Random().nextInt(5) + 1;
 
     // 초기 대여 시간 쿠키 생성
     _storageService.setInt('selected_rental_duration', _selectedHours);
     _storageService.setInt(
       'selected_price',
-      widget.accessory.pricePerHour * _selectedHours,
+      widget.accessory.price * _selectedHours,
     );
 
     _loadSavedInfo();
@@ -53,7 +49,7 @@ class _RentalDetailViewState extends State<RentalDetailView> {
       final savedAccessoryId =
           await _storageService.getString('selected_accessory_id');
 
-      if (savedAccessoryId == widget.accessory.id && mounted) {
+      if (savedAccessoryId == widget.accessory.itemTypeId && mounted) {
         // 스테이션 정보 불러오기
         if (savedStationId != null) {
           final stationRepository = StationRepository.instance;
@@ -128,7 +124,7 @@ class _RentalDetailViewState extends State<RentalDetailView> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '${widget.accessory.pricePerHour}원/시간',
+                            '${widget.accessory.price}원/시간',
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                           const SizedBox(height: 8),
@@ -137,7 +133,8 @@ class _RentalDetailViewState extends State<RentalDetailView> {
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                           const SizedBox(height: 24),
-                          if (_selectedStation != null && _quantity > 0)
+                          if (_selectedStation != null &&
+                              widget.accessory.stock > 0)
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
@@ -150,7 +147,7 @@ class _RentalDetailViewState extends State<RentalDetailView> {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                '남은 수량: $_quantity개',
+                                '남은 수량: ${widget.accessory.stock}개',
                                 style: TextStyle(
                                   color: Theme.of(context).primaryColor,
                                   fontWeight: FontWeight.w500,
@@ -174,7 +171,7 @@ class _RentalDetailViewState extends State<RentalDetailView> {
                       onPressed: _selectStation,
                       child: const Text('스테이션 선택 후 수량 확인하기'),
                     )
-                  else if (_quantity == 0)
+                  else if (widget.accessory.stock <= 0)
                     ElevatedButton(
                       onPressed: null,
                       child: const Text('현재 대여 불가능'),
@@ -185,11 +182,11 @@ class _RentalDetailViewState extends State<RentalDetailView> {
                         // 쿠키에 정보 저장
                         await _storageService.setString(
                           'selected_accessory_id',
-                          widget.accessory.id,
+                          widget.accessory.itemTypeId,
                         );
                         await _storageService.setString(
                           'selected_station_id',
-                          _selectedStation?.id.toString() ?? '',
+                          _selectedStation?.stationId.toString() ?? '',
                         );
                         await _storageService.setString(
                           'selected_accessory_name',
@@ -205,7 +202,7 @@ class _RentalDetailViewState extends State<RentalDetailView> {
                         );
                         await _storageService.setInt(
                           'selected_price',
-                          widget.accessory.pricePerHour * _selectedHours,
+                          widget.accessory.price * _selectedHours,
                         );
 
                         final scanned = await Navigator.of(context).push(

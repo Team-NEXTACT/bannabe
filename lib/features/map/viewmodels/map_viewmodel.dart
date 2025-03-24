@@ -88,7 +88,7 @@ class MapViewModel with ChangeNotifier {
 
     for (final station in stations) {
       final marker = NMarker(
-        id: 'station_${station.id}',
+        id: 'station_${station.stationId}',
         position: NLatLng(
           station.latitude,
           station.longitude,
@@ -104,7 +104,7 @@ class MapViewModel with ChangeNotifier {
         try {
           final stationId = int.parse(overlay.info.id.split('_')[1]);
           final selectedStation = _stations.firstWhere(
-            (s) => s.id == stationId,
+            (s) => s.stationId == stationId,
             orElse: () => throw Exception('Station not found'),
           );
           selectStation(selectedStation);
@@ -247,7 +247,7 @@ class MapViewModel with ChangeNotifier {
       final favoriteIds =
           await _storageService.getStringList('favorite_stations') ?? [];
       _favoriteStations = _stations
-          .where((station) => favoriteIds.contains(station.id))
+          .where((station) => favoriteIds.contains(station.stationId))
           .toList();
       notifyListeners();
     } catch (e) {
@@ -256,20 +256,20 @@ class MapViewModel with ChangeNotifier {
   }
 
   bool isStationFavorite(Station station) {
-    return _favoriteStations.any((s) => s.id == station.id);
+    return _favoriteStations.any((s) => s.stationId == station.stationId);
   }
 
   Future<void> toggleFavorite(Station station) async {
     try {
       if (isStationFavorite(station)) {
-        _favoriteStations.removeWhere((s) => s.id == station.id);
+        _favoriteStations.removeWhere((s) => s.stationId == station.stationId);
       } else {
         _favoriteStations.add(station);
       }
 
       await _storageService.setStringList(
         'favorite_stations',
-        _favoriteStations.map((s) => s.id.toString()).toList(),
+        _favoriteStations.map((s) => s.stationId.toString()).toList(),
       );
       notifyListeners();
     } catch (e) {
@@ -283,7 +283,7 @@ class MapViewModel with ChangeNotifier {
       final recentIds =
           await _storageService.getStringList('recent_stations') ?? [];
       _recentStations =
-          _stations.where((station) => recentIds.contains(station.id)).toList();
+          _stations.where((station) => recentIds.contains(station.stationId)).toList();
       notifyListeners();
     } catch (e) {
       print('Failed to load recent stations: $e');
@@ -292,7 +292,7 @@ class MapViewModel with ChangeNotifier {
 
   Future<void> _addToRecentStations(Station station) async {
     try {
-      _recentStations.removeWhere((s) => s.id == station.id);
+      _recentStations.removeWhere((s) => s.stationId == station.stationId);
       _recentStations.insert(0, station);
       if (_recentStations.length > 5) {
         _recentStations = _recentStations.sublist(0, 5);
@@ -300,7 +300,7 @@ class MapViewModel with ChangeNotifier {
 
       await _storageService.setStringList(
         'recent_stations',
-        _recentStations.map((s) => s.id.toString()).toList(),
+        _recentStations.map((s) => s.stationId.toString()).toList(),
       );
       notifyListeners();
     } catch (e) {

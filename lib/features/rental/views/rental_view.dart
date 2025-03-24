@@ -7,7 +7,6 @@ import '../../../app/routes.dart';
 import './rental_detail_view.dart';
 import '../../../core/widgets/loading_animation.dart';
 import '../../../core/constants/app_colors.dart';
-import 'dart:math';
 
 class RentalView extends StatelessWidget {
   const RentalView({super.key});
@@ -178,11 +177,6 @@ class _RentalContent extends StatelessWidget {
                                 (context, index) {
                                   final accessory =
                                       viewModel.filteredAccessories[index];
-                                  // 임시로 랜덤 수량 생성 (1~5)
-                                  // 마지막 아이템은 재고 없음으로 설정
-                                  final quantity = accessory.isAvailable
-                                      ? Random().nextInt(5) + 1
-                                      : 0;
                                   return InkWell(
                                     onTap: () {
                                       viewModel.selectAccessory(accessory);
@@ -223,7 +217,7 @@ class _RentalContent extends StatelessWidget {
                                                 ),
                                               ),
                                             ),
-                                            if (quantity == 0)
+                                            if (accessory.stock <= 0)
                                               Positioned.fill(
                                                 child: Container(
                                                   decoration: BoxDecoration(

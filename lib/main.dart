@@ -89,13 +89,13 @@ class MyApp extends StatelessWidget {
               as Map<String, dynamic>;
           final accessoryMap = args['accessory'] as Map<String, dynamic>;
           final accessory = Accessory(
-            id: accessoryMap['id'],
+            itemTypeId: accessoryMap['itemTypeId'],
             name: accessoryMap['name'],
             description: '대여 가능한 ${accessoryMap['name']}입니다.',
-            pricePerHour: accessoryMap['pricePerHour'],
+            price: accessoryMap['price'],
             category: AccessoryCategory.charger,
+            stock: accessoryMap['stock'] ?? 0,
             imageUrl: accessoryMap['imageUrl'],
-            isAvailable: accessoryMap['isAvailable'],
           );
           return RentalDetailView(accessory: accessory);
         },

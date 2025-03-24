@@ -417,11 +417,11 @@ class _HomeViewState extends State<HomeView> {
     final hours = rentalHours > 0 ? rentalHours : 1;
 
     return {
-      'id': rental.accessoryId,
+      'itemTypeId': rental.accessoryId,
       'name': rental.accessoryName,
-      'pricePerHour': rental.totalPrice ~/ hours,
+      'price': rental.totalPrice ~/ hours,
       'imageUrl': 'assets/images/accessories/${rental.accessoryId}.png',
-      'isAvailable': true,
+      'stock': 1,
     };
   }
 */

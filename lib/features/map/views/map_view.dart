@@ -185,7 +185,7 @@ class _MapContent extends StatelessWidget {
                                           ),
                                         ),
                                         Text(
-                                          '${viewModel.selectedStation!.stations_status} · ${viewModel.selectedStation!.business_time}',
+                                          '${viewModel.selectedStation!.status} · ${viewModel.selectedStation!.businessTime}',
                                           style: AppTheme.bodyMedium.copyWith(
                                             color: AppColors.grey,
                                           ),
@@ -234,7 +234,7 @@ class _MapContent extends StatelessWidget {
                                 // 선택된 스테이션 정보 저장
                                 await _storageService.setString(
                                   'selected_station_id',
-                                  viewModel.selectedStation!.id.toString(),
+                                  viewModel.selectedStation!.stationId.toString(),
                                 );
                                 await _storageService.setString(
                                   'selected_station_name',
