@@ -53,6 +53,7 @@ dependencies:
   url_launcher: ^6.2.4
   # 이미지 선택
   image_picker: ^1.0.7
+  flutter_svg: ^2.0.9
 
 dev_dependencies:
   flutter_test:

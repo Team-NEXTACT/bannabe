@@ -7,6 +7,7 @@ import '../../../core/constants/app_theme.dart';
 import '../../../core/services/auth_service.dart';
 import 'change_nickname_view.dart';
 import 'change_password_view.dart';
+import 'bookmarked_stations_view.dart';
 
 class EditProfileView extends StatefulWidget {
   const EditProfileView({super.key});
@@ -193,11 +194,32 @@ class _EditProfileViewState extends State<EditProfileView> {
                         height: 80,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.grey[200],
-                          image: const DecorationImage(
-                            image: AssetImage('assets/images/profile.jpg'),
-                            fit: BoxFit.cover,
+                          border: Border.all(
+                            color: Colors.white,
+                            width: 2,
                           ),
+                        ),
+                        child: ClipOval(
+                          child: user?.profileImageUrl != null &&
+                                  user!.profileImageUrl!.isNotEmpty
+                              ? Image(
+                                  image:
+                                      user.profileImageUrl!.startsWith('http')
+                                          ? NetworkImage(user.profileImageUrl!)
+                                          : AssetImage(user.profileImageUrl!)
+                                              as ImageProvider,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Image.asset(
+                                      'assets/images/profile.jpg',
+                                      fit: BoxFit.cover,
+                                    );
+                                  },
+                                )
+                              : Image.asset(
+                                  'assets/images/profile.jpg',
+                                  fit: BoxFit.cover,
+                                ),
                         ),
                       ),
                     ],
@@ -277,6 +299,44 @@ class _EditProfileViewState extends State<EditProfileView> {
                     children: [
                       const Text(
                         '비밀번호 변경',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16,
+                        color: Colors.grey[600],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // 4. 북마크한 스테이션 관리 페이지로 이동하는 필드
+              InkWell(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const BookmarkedStationsView(),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.lightGrey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        '북마크한 스테이션 관리',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,

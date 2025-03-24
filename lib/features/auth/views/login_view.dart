@@ -4,6 +4,7 @@ import '../../../core/constants/app_theme.dart';
 import '../../../core/widgets/loading_animation.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../app/routes.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -179,6 +180,102 @@ class _LoginViewState extends State<LoginView> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Row(
+                  children: [
+                    Expanded(child: Divider()),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        '또는',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    Expanded(child: Divider()),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                // 카카오 로그인 버튼
+                Center(
+                  child: SizedBox(
+                    width: 300,
+                    height: 45,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: Ink.image(
+                        image: const AssetImage(
+                            'assets/images/kakao_login_medium_wide.png'),
+                        fit: BoxFit.cover,
+                        child: InkWell(
+                          onTap: () {
+                            // TODO: 카카오 로그인 구현
+                            print('카카오 로그인 버튼 클릭됨');
+                          },
+                          splashColor: Colors.black.withOpacity(0.08),
+                          highlightColor: Colors.black.withOpacity(0.08),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // 구글 로그인 버튼
+                Center(
+                  child: SizedBox(
+                    width: 300,
+                    height: 45,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF2F2F2),
+                        borderRadius: BorderRadius.circular(4),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 1,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () {
+                            // TODO: 구글 로그인 구현
+                            print('구글 로그인 버튼 클릭됨');
+                          },
+                          borderRadius: BorderRadius.circular(4),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SvgPicture.asset(
+                                  'assets/images/google_logo.svg',
+                                  width: 18,
+                                  height: 18,
+                                ),
+                                const SizedBox(width: 12),
+                                const Text(
+                                  'Sign in with Google',
+                                  style: TextStyle(
+                                    color: Color(0xFF1F1F1F),
+                                    fontFamily: 'Roboto',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    letterSpacing: 0.25,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
