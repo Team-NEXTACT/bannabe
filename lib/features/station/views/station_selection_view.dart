@@ -57,7 +57,7 @@ class StationSelectionView extends StatelessWidget {
                       itemBuilder: (context, index) {
                         final station = viewModel.filteredStations[index];
                         final isSelected =
-                            viewModel.currentStation?.id == station.id;
+                            viewModel.currentStation?.stationId == station.stationId;
 
                         return InkWell(
                           onTap: () {

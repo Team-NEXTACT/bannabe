@@ -2,20 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/rental_viewmodel.dart';
 import '../../../data/models/accessory.dart';
+import '../../../data/models/station.dart';
 import '../../../core/widgets/bottom_navigation_bar.dart';
 import '../../../app/routes.dart';
 import './rental_detail_view.dart';
 import '../../../core/widgets/loading_animation.dart';
-import '../../../core/constants/app_colors.dart';
-import 'dart:math';
 
 class RentalView extends StatelessWidget {
-  const RentalView({super.key});
+  final Station? station;
+
+  const RentalView({
+    super.key,
+    this.station,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => RentalViewModel(),
+      create: (context) => RentalViewModel()..init(station),
       child: const _RentalContent(),
     );
   }
@@ -178,19 +182,15 @@ class _RentalContent extends StatelessWidget {
                                 (context, index) {
                                   final accessory =
                                       viewModel.filteredAccessories[index];
-                                  // 임시로 랜덤 수량 생성 (1~5)
-                                  // 마지막 아이템은 재고 없음으로 설정
-                                  final quantity = accessory.isAvailable
-                                      ? Random().nextInt(5) + 1
-                                      : 0;
                                   return InkWell(
-                                    onTap: () {
-                                      viewModel.selectAccessory(accessory);
+                                    onTap: () async {
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
                                           builder: (context) =>
                                               RentalDetailView(
-                                            accessory: accessory,
+                                            itemTypeId:
+                                                int.parse(accessory.itemTypeId),
+                                            itemName: accessory.name,
                                             station: viewModel.selectedStation,
                                           ),
                                         ),
@@ -208,22 +208,59 @@ class _RentalContent extends StatelessWidget {
                                                 decoration: BoxDecoration(
                                                   color: Colors.grey[100],
                                                 ),
-                                                child: Image.asset(
-                                                  accessory.imageUrl.isNotEmpty
-                                                      ? accessory.imageUrl
-                                                      : 'assets/images/bannabe.png',
+                                                child: Image.network(
+                                                  accessory.imageUrl,
                                                   fit: BoxFit.contain,
+                                                  loadingBuilder: (context,
+                                                      child, loadingProgress) {
+                                                    if (loadingProgress == null)
+                                                      return child;
+                                                    return Center(
+                                                      child:
+                                                          CircularProgressIndicator(
+                                                        value: loadingProgress
+                                                                    .expectedTotalBytes !=
+                                                                null
+                                                            ? loadingProgress
+                                                                    .cumulativeBytesLoaded /
+                                                                loadingProgress
+                                                                    .expectedTotalBytes!
+                                                            : null,
+                                                      ),
+                                                    );
+                                                  },
                                                   errorBuilder: (context, error,
                                                       stackTrace) {
-                                                    return Image.asset(
-                                                      'assets/images/bannabe.png',
-                                                      fit: BoxFit.contain,
+                                                    return Center(
+                                                      child: Column(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        children: [
+                                                          const Icon(
+                                                            Icons
+                                                                .image_not_supported,
+                                                            size: 48,
+                                                            color: Colors.grey,
+                                                          ),
+                                                          const SizedBox(
+                                                              height: 8),
+                                                          Text(
+                                                            '이미지를 불러올 수 없습니다',
+                                                            style: TextStyle(
+                                                              color: Colors
+                                                                  .grey[600],
+                                                              fontSize: 12,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
                                                     );
                                                   },
                                                 ),
                                               ),
                                             ),
-                                            if (quantity == 0)
+                                            if (accessory.stock <= 0)
                                               Positioned.fill(
                                                 child: Container(
                                                   decoration: BoxDecoration(

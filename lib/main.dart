@@ -25,6 +25,7 @@ import 'features/rental/views/rental_view.dart';
 import 'features/rental/views/rental_detail_view.dart';
 import 'features/rental/views/rental_status_view.dart';
 import 'features/rental/views/rental_history_view.dart';
+import 'data/models/station.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,21 +84,19 @@ class MyApp extends StatelessWidget {
       routes: {
         Routes.home: (context) => const HomeView(),
         Routes.map: (context) => const MapView(),
-        Routes.rental: (context) => const RentalView(),
+        Routes.rental: (context) {
+          final station =
+              ModalRoute.of(context)!.settings.arguments as Station?;
+          return RentalView(station: station);
+        },
         Routes.rentalDetail: (context) {
           final args = ModalRoute.of(context)!.settings.arguments
               as Map<String, dynamic>;
-          final accessoryMap = args['accessory'] as Map<String, dynamic>;
-          final accessory = Accessory(
-            id: accessoryMap['id'],
-            name: accessoryMap['name'],
-            description: '대여 가능한 ${accessoryMap['name']}입니다.',
-            pricePerHour: accessoryMap['pricePerHour'],
-            category: AccessoryCategory.charger,
-            imageUrl: accessoryMap['imageUrl'],
-            isAvailable: accessoryMap['isAvailable'],
+          return RentalDetailView(
+            itemTypeId: args['itemTypeId'] as int,
+            itemName: args['name'] as String,
+            station: args['station'] as Station?,
           );
-          return RentalDetailView(accessory: accessory);
         },
         Routes.rentalStatus: (context) => const RentalStatusView(),
         Routes.rentalHistory: (context) => const RentalHistoryView(),

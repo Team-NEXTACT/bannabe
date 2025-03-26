@@ -88,7 +88,7 @@ class _MapViewState extends State<MapView> {
 
     for (final station in widget.stations!) {
       final marker = NMarker(
-        id: station.id.toString(),
+        id: station.stationId.toString(),
         position: NLatLng(
           station.latitude,
           station.longitude,
@@ -101,7 +101,7 @@ class _MapViewState extends State<MapView> {
       marker.setOnTapListener((marker) {
         if (widget.onStationSelected != null) {
           final selectedStation = widget.stations!.firstWhere(
-            (s) => s.id == marker.info.id,
+            (s) => s.stationId == marker.info.id,
           );
           widget.onStationSelected!(selectedStation);
         }

@@ -35,12 +35,6 @@ class _MapContent extends StatelessWidget {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () {
-              _showRecentStations(context);
-            },
-          ),
-          IconButton(
             icon: const Icon(Icons.favorite),
             onPressed: () {
               _showFavoriteStations(context);
@@ -185,7 +179,7 @@ class _MapContent extends StatelessWidget {
                                           ),
                                         ),
                                         Text(
-                                          '${viewModel.selectedStation!.stations_status} · ${viewModel.selectedStation!.business_time}',
+                                          '${viewModel.selectedStation!.status} · ${viewModel.selectedStation!.businessTime}',
                                           style: AppTheme.bodyMedium.copyWith(
                                             color: AppColors.grey,
                                           ),
@@ -206,8 +200,19 @@ class _MapContent extends StatelessWidget {
                                           : Icons.favorite_border,
                                       color: AppColors.primary,
                                     ),
-                                    onPressed: () => viewModel.toggleFavorite(
-                                        viewModel.selectedStation!),
+                                    onPressed: () {
+                                      try {
+                                        viewModel.toggleFavorite(
+                                            viewModel.selectedStation!);
+                                      } catch (e) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            content: Text(e.toString()),
+                                          ),
+                                        );
+                                      }
+                                    },
                                   ),
                                   IconButton(
                                     padding: EdgeInsets.zero,
@@ -231,35 +236,13 @@ class _MapContent extends StatelessWidget {
                               ),
                               child: const Text('대여 가능 물품 조회'),
                               onPressed: () async {
-                                // 선택된 스테이션 정보 저장
-                                await _storageService.setString(
-                                  'selected_station_id',
-                                  viewModel.selectedStation!.id.toString(),
-                                );
-                                await _storageService.setString(
-                                  'selected_station_name',
-                                  viewModel.selectedStation!.name,
-                                );
+                                await _storageService.setSelectedStation(
+                                    viewModel.selectedStation!);
 
-                                final savedAccessory =
-                                    await viewModel.getSelectedAccessory();
-                                if (savedAccessory != null) {
-                                  if (context.mounted) {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (context) => RentalDetailView(
-                                          accessory: savedAccessory,
-                                          station: viewModel.selectedStation,
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                } else {
-                                  Navigator.of(context).pushNamed(
-                                    Routes.rental,
-                                    arguments: viewModel.selectedStation,
-                                  );
-                                }
+                                Navigator.of(context).pushNamed(
+                                  Routes.rental,
+                                  arguments: viewModel.selectedStation,
+                                );
                               },
                             ),
                           ),
@@ -273,53 +256,6 @@ class _MapContent extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: const AppBottomNavigationBar(currentIndex: 1),
-    );
-  }
-
-  void _showRecentStations(BuildContext context) {
-    final viewModel = Provider.of<MapViewModel>(context, listen: false);
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return ChangeNotifierProvider.value(
-          value: viewModel,
-          child: Consumer<MapViewModel>(
-            builder: (context, viewModel, _) {
-              return Container(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('최근 이용 스테이션', style: AppTheme.titleMedium),
-                    const SizedBox(height: 16),
-                    if (viewModel.recentStations.isEmpty)
-                      const Center(
-                        child: Text('최근 이용한 스테이션이 없습니다'),
-                      )
-                    else
-                      ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: viewModel.recentStations.length,
-                        itemBuilder: (context, index) {
-                          final station = viewModel.recentStations[index];
-                          return ListTile(
-                            title: Text(station.name),
-                            subtitle: Text(station.address),
-                            onTap: () {
-                              viewModel.selectStation(station);
-                              Navigator.pop(context);
-                            },
-                          );
-                        },
-                      ),
-                  ],
-                ),
-              );
-            },
-          ),
-        );
-      },
     );
   }
 
@@ -356,8 +292,17 @@ class _MapContent extends StatelessWidget {
                             trailing: IconButton(
                               icon: const Icon(Icons.favorite),
                               color: AppColors.primary,
-                              onPressed: () =>
-                                  viewModel.toggleFavorite(station),
+                              onPressed: () {
+                                try {
+                                  viewModel.toggleFavorite(station);
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(e.toString()),
+                                    ),
+                                  );
+                                }
+                              },
                             ),
                             onTap: () {
                               viewModel.selectStation(station);
