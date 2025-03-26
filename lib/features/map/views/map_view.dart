@@ -241,25 +241,11 @@ class _MapContent extends StatelessWidget {
                                   viewModel.selectedStation!.name,
                                 );
 
-                                final savedAccessory =
-                                    await viewModel.getSelectedAccessory();
-                                if (savedAccessory != null) {
-                                  if (context.mounted) {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (context) => RentalDetailView(
-                                          accessory: savedAccessory,
-                                          station: viewModel.selectedStation,
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                } else {
-                                  Navigator.of(context).pushNamed(
-                                    Routes.rental,
-                                    arguments: viewModel.selectedStation,
-                                  );
-                                }
+                                // 대여 가능 물품 목록 화면으로 이동
+                                Navigator.of(context).pushNamed(
+                                  Routes.rental,
+                                  arguments: viewModel.selectedStation,
+                                );
                               },
                             ),
                           ),

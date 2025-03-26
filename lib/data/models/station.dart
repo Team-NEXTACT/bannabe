@@ -23,7 +23,7 @@ class Station {
 
   factory Station.fromJson(Map<String, dynamic> json) {
     return Station(
-      stationId: json['id'] as int,
+      stationId: json['stationId'] as int,
       name: json['name'] as String,
       address: json['address'] as String,
       latitude: json['latitude'] as double,
@@ -36,13 +36,13 @@ class Station {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': stationId,
+      'stationId': stationId,
       'name': name,
       'address': address,
       'latitude': latitude,
       'longitude': longitude,
       'businessTime': businessTime,
-      'stations_status': status,
+      'status': status,
       'grade': grade,
     };
   }
@@ -52,11 +52,11 @@ class Station {
   // 상태에 따른 색상
   Color get statusColor {
     switch (status) {
-      case '영업중':
+      case 'OPEN':
         return Colors.green;
-      case '준비중':
+      case 'PREPARING':
         return Colors.orange;
-      case '운영 종료':
+      case 'CLOSED':
         return Colors.red;
       default:
         return Colors.grey;
