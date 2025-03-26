@@ -132,6 +132,42 @@ class AuthService with ChangeNotifier {
 
   Future<void> signOut() async {
     try {
+      print('[DEBUG] 로그아웃 API 호출');
+
+      // 토큰 가져오기
+      final accessToken = await TokenService.instance.getAccessToken();
+      final refreshToken = await TokenService.instance.getRefreshToken();
+
+      if (accessToken == null) {
+        throw Exception('로그아웃 실패: 인증 토큰이 없습니다.');
+      }
+      if (refreshToken == null) {
+        throw Exception('로그아웃 실패: 리프레시 토큰이 없습니다.');
+      }
+
+      print('[DEBUG] 로그아웃 API 요청:');
+      print('  - URL: ${_dio.options.baseUrl}/logout');
+      print('  - Access Token: $accessToken');
+      print('  - Refresh Token: $refreshToken');
+
+      // 로그아웃 API 호출 (토큰 포함)
+      final response = await _dio.post(
+        '/logout',
+        data: {
+          'refreshToken': refreshToken,
+        },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $accessToken',
+          },
+          validateStatus: (status) => status! < 500, // 500 에러는 캐치하도록 설정
+        ),
+      );
+
+      print('[DEBUG] 로그아웃 API 응답:');
+      print('  - 상태 코드: ${response.statusCode}');
+      print('  - 응답 데이터: ${response.data}');
+
       // 토큰 삭제
       await TokenService.instance.clearTokens();
 
@@ -140,7 +176,16 @@ class AuthService with ChangeNotifier {
       await StorageService.instance.remove('user');
       notifyListeners();
     } catch (e) {
-      throw Exception('로그아웃 실패: ${e.toString()}');
+      print('[DEBUG] 로그아웃 에러: $e');
+
+      // API 호출이 실패하더라도 로컬 데이터는 삭제
+      await TokenService.instance.clearTokens();
+      _currentUser = null;
+      await StorageService.instance.remove('user');
+      notifyListeners();
+
+      // 에러는 던지지 않고 로컬 로그아웃만 수행
+      print('[DEBUG] 로컬 로그아웃 완료');
     }
   }
 
