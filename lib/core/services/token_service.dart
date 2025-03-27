@@ -13,28 +13,19 @@ class TokenService {
     required String accessToken,
     required String refreshToken,
   }) async {
-    print('TokenService - 토큰 저장 시도');
-    print('저장할 액세스 토큰: $accessToken');
-    print('저장할 리프레시 토큰: $refreshToken');
-
     await _storage.write(key: 'access_token', value: accessToken);
     await _storage.write(key: 'refresh_token', value: refreshToken);
-    print('TokenService - 토큰 저장 완료');
   }
 
   // 액세스 토큰 가져오기
   Future<String?> getAccessToken() async {
-    print('TokenService - 액세스 토큰 가져오기 시도');
     final token = await _storage.read(key: 'access_token');
-    print('TokenService - 가져온 액세스 토큰: $token');
     return token;
   }
 
   // 리프레시 토큰 가져오기
   Future<String?> getRefreshToken() async {
-    print('TokenService - 리프레시 토큰 가져오기 시도');
     final token = await _storage.read(key: 'refresh_token');
-    print('TokenService - 가져온 리프레시 토큰: $token');
     return token;
   }
 
