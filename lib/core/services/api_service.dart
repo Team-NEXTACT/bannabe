@@ -123,9 +123,9 @@ class ApiService {
   }
 
   // POST 요청
-  Future<Response> post(String path, {dynamic data}) async {
+  Future<Response> post(String path, {dynamic data, Options? options}) async {
     try {
-      return await _dio.post(path, data: data);
+      return await _dio.post(path, data: data, options: options);
     } on DioException {
       rethrow;
     }

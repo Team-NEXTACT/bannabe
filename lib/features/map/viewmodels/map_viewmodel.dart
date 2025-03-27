@@ -9,6 +9,8 @@ import '../../../core/services/location_service.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/user_service.dart';
+import '../../../core/services/token_service.dart';
+import 'package:dio/dio.dart';
 
 class MapViewModel with ChangeNotifier {
   final StationRepository _stationRepository;
@@ -16,6 +18,7 @@ class MapViewModel with ChangeNotifier {
   final StorageService _storageService;
   final ApiService _apiService = ApiService.instance;
   final UserService _userService = UserService.instance;
+  final TokenService _tokenService = TokenService.instance;
 
   List<NMarker> _markers = [];
   Position? _currentPosition;
@@ -82,7 +85,10 @@ class MapViewModel with ChangeNotifier {
     try {
       await _getCurrentLocation();
       await _loadStations();
-      await _loadFavoriteStations();
+      final token = await _tokenService.getAccessToken();
+      if (token != null) {
+        await _loadFavoriteStations();
+      }
       _selectedStation = await _storageService.getSelectedStation();
       notifyListeners();
     } catch (e) {
@@ -111,33 +117,59 @@ class MapViewModel with ChangeNotifier {
     try {
       print('[DEBUG] 북마크 토글 - 스테이션 ID: ${station.stationId}');
 
-      final response = await _apiService.post(
-        '/stations/${station.stationId}/bookmark',
-        data: {},
-      );
+      final token = await _tokenService.getAccessToken();
+      if (token == null) {
+        throw '인증 토큰이 없습니다.';
+      }
 
-      print('[DEBUG] 북마크 토글 응답:');
-      print('  - 상태 코드: ${response.statusCode}');
-      print('  - 응답 데이터: ${response.data}');
+      final isCurrentlyFavorite = isStationFavorite(station);
 
-      if (response.statusCode == 200 && response.data != null) {
-        if (response.data['success'] == true) {
-          // 북마크 상태 토글
-          final isCurrentlyFavorite = isStationFavorite(station);
-          if (isCurrentlyFavorite) {
-            _favoriteStations
-                .removeWhere((s) => s.stationId == station.stationId);
-          } else {
+      if (isCurrentlyFavorite) {
+        // 북마크 삭제
+        final bookmarks = await _userService.getBookmarkedStations();
+        final bookmark = bookmarks.firstWhere(
+          (b) => b.stationId == station.stationId,
+          orElse: () => throw Exception('북마크를 찾을 수 없습니다.'),
+        );
+
+        await _userService.removeBookmark(bookmark.bookmarkId);
+        _favoriteStations.removeWhere((s) => s.stationId == station.stationId);
+      } else {
+        // 북마크 추가
+        final response = await _apiService.post(
+          '/stations/${station.stationId}/bookmark',
+          data: {},
+          options: Options(
+            headers: {
+              'Authorization': 'Bearer $token',
+            },
+          ),
+        );
+
+        if (response.statusCode == 200 && response.data != null) {
+          if (response.data['success'] == true) {
             _favoriteStations.add(station);
+          } else {
+            throw response.data['message'] ?? '북마크 추가에 실패했습니다.';
           }
-          notifyListeners();
-
-          // 북마크 목록 갱신
-          await _loadFavoriteStations();
         } else {
-          throw response.data['message'] ?? '북마크 처리에 실패했습니다.';
+          throw '서버 응답 오류: ${response.statusCode}';
         }
       }
+
+      notifyListeners();
+      await _loadFavoriteStations();
+    } on DioException catch (e) {
+      print('[DEBUG] 북마크 토글 DioException:');
+      print('  - 에러 타입: ${e.type}');
+      print('  - 에러 메시지: ${e.message}');
+      print('  - 응답 데이터: ${e.response?.data}');
+      print('  - 요청 데이터: ${e.requestOptions.data}');
+      print('  - 요청 헤더: ${e.requestOptions.headers}');
+
+      final errorMessage =
+          e.response?.data?['message'] ?? e.message ?? '북마크 처리에 실패했습니다.';
+      throw '북마크 처리에 실패했습니다: $errorMessage';
     } catch (e) {
       print('[DEBUG] 북마크 토글 에러: $e');
       throw '북마크 처리에 실패했습니다: ${e.toString()}';
@@ -270,6 +302,13 @@ class MapViewModel with ChangeNotifier {
   // 즐겨찾기 기능
   Future<void> _loadFavoriteStations() async {
     try {
+      final token = await _tokenService.getAccessToken();
+      if (token == null) {
+        _favoriteStations = [];
+        notifyListeners();
+        return;
+      }
+
       print('[DEBUG] 북마크 스테이션 목록 조회');
       final bookmarks = await _userService.getBookmarkedStations();
 

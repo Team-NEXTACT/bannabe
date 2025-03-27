@@ -7,8 +7,8 @@ import '../../../core/widgets/bottom_navigation_bar.dart';
 import '../../../core/widgets/loading_animation.dart';
 import '../viewmodels/map_viewmodel.dart';
 import '../../../app/routes.dart';
-import '../../../features/rental/views/rental_detail_view.dart';
 import '../../../core/services/storage_service.dart';
+import '../../../core/services/token_service.dart';
 
 class MapView extends StatelessWidget {
   const MapView({super.key});
@@ -26,6 +26,7 @@ class _MapContent extends StatelessWidget {
   _MapContent();
 
   final _storageService = StorageService.instance;
+  final _tokenService = TokenService.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -34,10 +35,18 @@ class _MapContent extends StatelessWidget {
         title: const Text('주변 스테이션'),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.favorite),
-            onPressed: () {
-              _showFavoriteStations(context);
+          FutureBuilder<String?>(
+            future: _tokenService.getAccessToken(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data != null) {
+                return IconButton(
+                  icon: const Icon(Icons.favorite),
+                  onPressed: () {
+                    _showFavoriteStations(context);
+                  },
+                );
+              }
+              return const SizedBox.shrink();
             },
           ),
         ],
@@ -191,27 +200,36 @@ class _MapContent extends StatelessWidget {
                               ),
                               Row(
                                 children: [
-                                  IconButton(
-                                    padding: EdgeInsets.zero,
-                                    icon: Icon(
-                                      viewModel.isStationFavorite(
-                                              viewModel.selectedStation!)
-                                          ? Icons.favorite
-                                          : Icons.favorite_border,
-                                      color: AppColors.primary,
-                                    ),
-                                    onPressed: () {
-                                      try {
-                                        viewModel.toggleFavorite(
-                                            viewModel.selectedStation!);
-                                      } catch (e) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(e.toString()),
+                                  FutureBuilder<String?>(
+                                    future: _tokenService.getAccessToken(),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.hasData &&
+                                          snapshot.data != null) {
+                                        return IconButton(
+                                          padding: EdgeInsets.zero,
+                                          icon: Icon(
+                                            viewModel.isStationFavorite(
+                                                    viewModel.selectedStation!)
+                                                ? Icons.favorite
+                                                : Icons.favorite_border,
+                                            color: AppColors.primary,
                                           ),
+                                          onPressed: () {
+                                            try {
+                                              viewModel.toggleFavorite(
+                                                  viewModel.selectedStation!);
+                                            } catch (e) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  content: Text(e.toString()),
+                                                ),
+                                              );
+                                            }
+                                          },
                                         );
                                       }
+                                      return const SizedBox.shrink();
                                     },
                                   ),
                                   IconButton(
