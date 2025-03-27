@@ -85,17 +85,14 @@ class QRScanViewModel extends ChangeNotifier {
         throw Exception('스테이션 정보를 찾을 수 없습니다.');
       }
 
+      final now = DateTime.now();
       _rental = Rental(
-        id: 'rental-${DateTime.now().millisecondsSinceEpoch}',
-        userId: 'test-user-id',
-        accessoryId: scannedAccessoryId,
-        stationId: scannedStationId,
-        accessoryName: accessory.name,
-        stationName: station.name,
-        totalPrice: pricePerHour,
-        status: RentalStatus.active,
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
+        name: accessory.name,
+        status: '대여중',
+        rentalTimeHour: _rentalDuration,
+        startTime: now,
+        expectedReturnTime: now.add(Duration(hours: _rentalDuration)),
+        token: qrCode,
       );
     } catch (e) {
       _error = e.toString();
@@ -123,16 +120,12 @@ class QRScanViewModel extends ChangeNotifier {
       // 반납 처리
       final now = DateTime.now();
       _rental = Rental(
-        id: initialRental!.id,
-        userId: initialRental!.userId,
-        accessoryId: initialRental!.accessoryId,
-        stationId: stationId,
-        accessoryName: initialRental!.accessoryName,
-        stationName: initialRental!.stationName,
-        totalPrice: initialRental!.totalPrice,
-        status: RentalStatus.completed,
-        createdAt: initialRental!.createdAt,
-        updatedAt: now,
+        name: initialRental!.name,
+        status: '반납',
+        rentalTimeHour: initialRental!.rentalTimeHour,
+        startTime: initialRental!.startTime,
+        expectedReturnTime: initialRental!.expectedReturnTime,
+        token: initialRental!.token,
       );
       _isReturnComplete = true;
     } catch (e) {

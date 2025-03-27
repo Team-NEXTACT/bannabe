@@ -108,16 +108,15 @@ class _PaymentViewState extends State<PaymentView> {
                       child: Column(
                         children: [
                           Text(
-                            '${widget.rental.totalPrice}원',
+                            '${1000 * widget.rental.rentalTimeHour}원',
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.primary,
                             ),
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '${widget.rental.accessoryName} (${widget.rental.totalRentalTime.inHours}시간)',
+                            '${widget.rental.name} (${widget.rental.rentalTimeHour}시간)',
                             style: const TextStyle(
                               color: Colors.black54,
                             ),
@@ -259,8 +258,8 @@ class _PaymentViewState extends State<PaymentView> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('스테이션'),
-                                  Text(widget.rental.stationName),
+                                  const Text('상품'),
+                                  Text(widget.rental.name),
                                 ],
                               ),
                               const SizedBox(height: 8),
@@ -268,8 +267,21 @@ class _PaymentViewState extends State<PaymentView> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('상품'),
-                                  Text(widget.rental.accessoryName),
+                                  const Text('대여 시작'),
+                                  Text(widget.rental.startTime
+                                      .toString()
+                                      .substring(0, 16)),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('반납 예정'),
+                                  Text(widget.rental.expectedReturnTime
+                                      .toString()
+                                      .substring(0, 16)),
                                 ],
                               ),
                               const SizedBox(height: 8),
@@ -278,8 +290,7 @@ class _PaymentViewState extends State<PaymentView> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   const Text('대여 시간'),
-                                  Text(
-                                      '${widget.rental.totalRentalTime.inHours}시간'),
+                                  Text('${widget.rental.rentalTimeHour}시간'),
                                 ],
                               ),
                               const SizedBox(height: 8),
@@ -288,8 +299,7 @@ class _PaymentViewState extends State<PaymentView> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   const Text('시간당 금액'),
-                                  Text(
-                                      '${widget.rental.totalRentalTime.inHours > 0 ? widget.rental.totalPrice ~/ widget.rental.totalRentalTime.inHours : widget.rental.totalPrice}원'),
+                                  Text('1000원'),
                                 ],
                               ),
                               const SizedBox(height: 8),
@@ -299,14 +309,15 @@ class _PaymentViewState extends State<PaymentView> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    '총 결제 금액',
-                                    style: AppTheme.titleMedium.copyWith(
-                                      color: AppColors.primary,
+                                  const Text(
+                                    '총 금액',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   Text(
-                                    '${widget.rental.totalPrice}원',
+                                    '${1000 * widget.rental.rentalTimeHour}원',
                                     style: AppTheme.titleMedium.copyWith(
                                       color: AppColors.primary,
                                     ),
@@ -362,7 +373,7 @@ class _PaymentViewState extends State<PaymentView> {
                                   ),
                                 ),
                                 Text(
-                                  '${widget.rental.totalPrice}원',
+                                  '${1000 * widget.rental.rentalTimeHour}원',
                                   style: AppTheme.titleMedium.copyWith(
                                     color: AppColors.primary,
                                     fontWeight: FontWeight.bold,

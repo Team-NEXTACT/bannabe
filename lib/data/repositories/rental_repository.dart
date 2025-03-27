@@ -1,5 +1,6 @@
 import '../models/rental.dart';
 import 'base_repository.dart';
+import '../../core/services/api_service.dart';
 
 class RentalRepository implements BaseRepository<Rental> {
   static final RentalRepository _instance = RentalRepository._internal();
@@ -9,223 +10,70 @@ class RentalRepository implements BaseRepository<Rental> {
 
   @override
   Future<Rental> get(String id) async {
-    await Future.delayed(const Duration(seconds: 1));
-    final now = DateTime.now();
-    return Rental(
-      id: id,
-      userId: 'test-user-id',
-      accessoryId: 'A1',
-      stationId: 'S1',
-      accessoryName: '보조배터리 10000mAh',
-      stationName: '강남역점',
-      totalPrice: 5000,
-      status: RentalStatus.active,
-      createdAt: now,
-      updatedAt: now,
-    );
+    // TODO: Implement actual API call
+    throw UnimplementedError();
   }
 
   @override
   Future<List<Rental>> getAll() async {
-    await Future.delayed(const Duration(seconds: 1));
-    final now = DateTime.now();
-    return [
-      Rental(
-        id: 'rental-1',
-        userId: 'test-user-id',
-        accessoryId: 'A1',
-        stationId: 'S1',
-        accessoryName: '보조배터리 10000mAh',
-        stationName: '강남역점',
-        totalPrice: 5000,
-        status: RentalStatus.completed,
-        createdAt: now.subtract(const Duration(days: 1)),
-        updatedAt: now,
-      ),
-      Rental(
-        id: 'rental-2',
-        userId: 'test-user-id',
-        accessoryId: 'A2',
-        stationId: 'S2',
-        accessoryName: '충전케이블 (C타입)',
-        stationName: '홍대입구역점',
-        totalPrice: 7000,
-        status: RentalStatus.completed,
-        createdAt: now.subtract(const Duration(days: 2)),
-        updatedAt: now.subtract(const Duration(days: 1)),
-      ),
-    ];
+    // TODO: Implement actual API call
+    throw UnimplementedError();
   }
 
   @override
   Future<Rental> create(Rental rental) async {
-    await Future.delayed(const Duration(seconds: 1));
-    return rental;
+    // TODO: Implement actual API call
+    throw UnimplementedError();
   }
 
   @override
   Future<Rental> update(Rental rental) async {
-    await Future.delayed(const Duration(seconds: 1));
-    return rental;
+    // TODO: Implement actual API call
+    throw UnimplementedError();
   }
 
   @override
   Future<void> delete(String id) async {
-    await Future.delayed(const Duration(seconds: 1));
-  }
-
-  Future<List<Rental>> getByUser(String userId) async {
-    await Future.delayed(const Duration(seconds: 1));
-    final now = DateTime.now();
-    return [
-      Rental(
-        id: 'rental-1',
-        userId: userId,
-        accessoryId: 'A1',
-        stationId: 'S1',
-        accessoryName: '보조배터리 10000mAh',
-        stationName: '강남역점',
-        totalPrice: 5000,
-        status: RentalStatus.completed,
-        createdAt: now.subtract(const Duration(days: 1)),
-        updatedAt: now,
-      ),
-      Rental(
-        id: 'rental-2',
-        userId: userId,
-        accessoryId: 'A2',
-        stationId: 'S2',
-        accessoryName: '충전케이블 (C타입)',
-        stationName: '홍대입구역점',
-        totalPrice: 7000,
-        status: RentalStatus.completed,
-        createdAt: now.subtract(const Duration(days: 2)),
-        updatedAt: now.subtract(const Duration(days: 1)),
-      ),
-    ];
+    // TODO: Implement actual API call
+    throw UnimplementedError();
   }
 
   Future<List<Rental>> getActiveRentals() async {
-    await Future.delayed(const Duration(seconds: 1));
-    final now = DateTime.now();
-    return [
-      Rental(
-        id: 'R1',
-        userId: 'test@test.com',
-        accessoryId: 'powerbank-1',
-        stationId: 'S1',
-        accessoryName: '노트북용 보조배터리',
-        stationName: '강남역점',
-        totalPrice: 3000,
-        status: RentalStatus.active,
-        createdAt: now.subtract(const Duration(hours: 1)),
-        updatedAt: now.subtract(const Duration(hours: 1)),
-      ),
-      Rental(
-        id: 'R2',
-        userId: 'test@test.com',
-        accessoryId: 'cable-3',
-        stationId: 'S2',
-        accessoryName: 'C to C 케이블',
-        stationName: '홍대입구역점',
-        totalPrice: 500,
-        status: RentalStatus.active,
-        createdAt: now.subtract(const Duration(minutes: 30)),
-        updatedAt: now.subtract(const Duration(minutes: 30)),
-      ),
-    ];
-  }
+    try {
+      final response =
+          await ApiService.instance.get('/users/me/rentals/active');
+      print('대여 현황 응답: ${response.data}');
 
-  Future<List<Rental>> getRentalHistory(String userId) async {
-    await Future.delayed(const Duration(seconds: 1));
-    final now = DateTime.now();
-    return [
-      Rental(
-        id: 'rental-1',
-        userId: userId,
-        accessoryId: 'A1',
-        stationId: 'S1',
-        accessoryName: '보조배터리 10000mAh',
-        stationName: '강남역점',
-        totalPrice: 5000,
-        status: RentalStatus.completed,
-        createdAt: now.subtract(const Duration(days: 1, hours: 2)),
-        updatedAt: now.subtract(const Duration(days: 1)),
-      ),
-      Rental(
-        id: 'rental-2',
-        userId: userId,
-        accessoryId: 'A2',
-        stationId: 'S2',
-        accessoryName: '충전케이블 (C타입)',
-        stationName: '홍대입구역점',
-        totalPrice: 7000,
-        status: RentalStatus.completed,
-        createdAt: now.subtract(const Duration(days: 2, hours: 3)),
-        updatedAt: now.subtract(const Duration(days: 2)),
-      ),
-    ];
+      if (response.statusCode == 200 && response.data != null) {
+        final responseData = response.data;
+        if (responseData['success'] == true && responseData['data'] != null) {
+          final List<dynamic> rentals = responseData['data']['rentals'] ?? [];
+          return rentals.map((json) => Rental.fromJson(json)).toList();
+        }
+      }
+      throw Exception('대여 정보를 가져오는데 실패했습니다');
+    } catch (e) {
+      print('대여 현황 에러: $e');
+      throw '대여 정보를 가져오는데 실패했습니다: ${e.toString()}';
+    }
   }
 
   Future<List<Rental>> getRecentRentals() async {
-    await Future.delayed(const Duration(seconds: 1));
-    final now = DateTime.now();
+    try {
+      final response = await ApiService.instance.get('/users/me/rentals');
+      print('대여 내역 응답: ${response.data}');
 
-    return [
-      Rental(
-        id: 'R3',
-        userId: 'test@test.com',
-        accessoryId: 'charger-1',
-        stationId: 'S1',
-        accessoryName: '노트북 고출력 충전기',
-        stationName: '강남역점',
-        returnStationId: 'S2',
-        returnStationName: '홍대입구역점',
-        totalPrice: 2000,
-        status: RentalStatus.overdue,
-        createdAt: now.subtract(const Duration(days: 1, hours: 5)),
-        updatedAt: now.subtract(const Duration(days: 1)),
-      ),
-      Rental(
-        id: 'R4',
-        userId: 'test@test.com',
-        accessoryId: 'dock-3',
-        stationId: 'S2',
-        accessoryName: '멀티 독 (Type-C)',
-        stationName: '홍대입구역점',
-        returnStationId: 'S1',
-        returnStationName: '강남역점',
-        totalPrice: 2000,
-        status: RentalStatus.completed,
-        createdAt: now.subtract(const Duration(days: 2, hours: 4)),
-        updatedAt: now.subtract(const Duration(days: 2)),
-      ),
-      Rental(
-        id: 'R5',
-        userId: 'test@test.com',
-        accessoryId: 'powerbank-2',
-        stationId: 'S3',
-        accessoryName: '휴대폰용 보조배터리',
-        stationName: '명동점',
-        returnStationId: 'S4',
-        returnStationName: '여의도역점',
-        totalPrice: 1500,
-        status: RentalStatus.overdueCompleted,
-        createdAt: now.subtract(const Duration(days: 3, hours: 5)),
-        updatedAt: now.subtract(const Duration(days: 3)),
-      ),
-      Rental(
-        id: 'R6',
-        userId: 'test@test.com',
-        accessoryId: 'etc-1',
-        stationId: 'S4',
-        accessoryName: '발표용 리모콘',
-        stationName: '여의도역점',
-        totalPrice: 1000,
-        status: RentalStatus.completed,
-        createdAt: now.subtract(const Duration(days: 4, hours: 2)),
-        updatedAt: now.subtract(const Duration(days: 4)),
-      ),
-    ];
+      if (response.statusCode == 200 && response.data != null) {
+        final responseData = response.data;
+        if (responseData['success'] == true && responseData['data'] != null) {
+          final List<dynamic> rentals = responseData['data']['content'] ?? [];
+          return rentals.map((json) => Rental.fromJson(json)).toList();
+        }
+      }
+      throw Exception('대여 기록을 가져오는데 실패했습니다');
+    } catch (e) {
+      print('대여 내역 에러: $e');
+      throw '대여 기록을 가져오는데 실패했습니다: ${e.toString()}';
+    }
   }
 }

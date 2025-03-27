@@ -60,7 +60,7 @@ class _RentalDurationViewState extends State<RentalDurationView> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  widget.rental.stationName,
+                                  '대여 시작: ${widget.rental.startTime.toString().substring(0, 16)}',
                                   style: const TextStyle(
                                     fontSize: 16,
                                     color: Colors.black87,
@@ -79,7 +79,7 @@ class _RentalDurationViewState extends State<RentalDurationView> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  widget.rental.accessoryName,
+                                  widget.rental.name,
                                   style: const TextStyle(
                                     fontSize: 16,
                                     color: Colors.black87,
@@ -196,7 +196,7 @@ class _RentalDurationViewState extends State<RentalDurationView> {
                                 ),
                               ),
                               Text(
-                                '${widget.rental.totalPrice ~/ widget.rental.totalRentalTime.inHours}원',
+                                '1000원',
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
@@ -219,7 +219,7 @@ class _RentalDurationViewState extends State<RentalDurationView> {
                                 ),
                               ),
                               Text(
-                                '${(widget.rental.totalPrice ~/ widget.rental.totalRentalTime.inHours) * _selectedHours}원',
+                                '${1000 * _selectedHours}원',
                                 style: TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
@@ -254,18 +254,13 @@ class _RentalDurationViewState extends State<RentalDurationView> {
                 child: ElevatedButton(
                   onPressed: () {
                     final updatedRental = Rental(
-                      id: widget.rental.id,
-                      userId: widget.rental.userId,
-                      accessoryId: widget.rental.accessoryId,
-                      stationId: widget.rental.stationId,
-                      accessoryName: widget.rental.accessoryName,
-                      stationName: widget.rental.stationName,
-                      totalPrice: (widget.rental.totalPrice ~/
-                              widget.rental.totalRentalTime.inHours) *
-                          _selectedHours,
+                      name: widget.rental.name,
                       status: widget.rental.status,
-                      createdAt: widget.rental.createdAt,
-                      updatedAt: widget.rental.updatedAt,
+                      rentalTimeHour: _selectedHours,
+                      startTime: widget.rental.startTime,
+                      expectedReturnTime: widget.rental.startTime
+                          .add(Duration(hours: _selectedHours)),
+                      token: widget.rental.token,
                     );
 
                     Navigator.of(context).pushReplacementNamed(

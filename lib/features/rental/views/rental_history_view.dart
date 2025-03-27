@@ -99,31 +99,26 @@ class _RentalHistoryViewState extends State<RentalHistoryView> {
   }
 
   Widget _buildRentalCard(Rental rental) {
-    String statusText;
+    String statusText = rental.status;
     Color statusColor;
     IconData statusIcon;
 
     switch (rental.status) {
-      case RentalStatus.active:
-        statusText = '대여 중';
+      case '대여중':
         statusColor = AppColors.primary;
         statusIcon = Icons.access_time;
         break;
-      case RentalStatus.completed:
-        statusText = '반납 완료';
-        statusColor = Colors.grey;
-        statusIcon = Icons.check_circle_outline;
-        break;
-      case RentalStatus.overdue:
-        statusText = '연체';
+      case '연체':
         statusColor = Colors.red;
-        statusIcon = Icons.warning_amber_rounded;
+        statusIcon = Icons.warning_outlined;
         break;
-      case RentalStatus.overdueCompleted:
-        statusText = '반납 완료';
+      case '반납':
         statusColor = Colors.grey;
         statusIcon = Icons.check_circle_outline;
         break;
+      default:
+        statusColor = Colors.grey;
+        statusIcon = Icons.help_outline;
     }
 
     return Container(
@@ -151,7 +146,7 @@ class _RentalHistoryViewState extends State<RentalHistoryView> {
                   children: [
                     Expanded(
                       child: Text(
-                        rental.accessoryName,
+                        rental.name,
                         style: AppTheme.titleMedium.copyWith(
                           fontSize: 18,
                         ),
@@ -192,51 +187,13 @@ class _RentalHistoryViewState extends State<RentalHistoryView> {
                 Row(
                   children: [
                     Icon(
-                      Icons.location_on_outlined,
-                      size: 20,
-                      color: Colors.grey[600],
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '대여: ${rental.stationName}',
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.grey[800],
-                      ),
-                    ),
-                  ],
-                ),
-                if (rental.returnStationName != null) ...[
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.location_on_outlined,
-                        size: 20,
-                        color: Colors.grey[600],
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '반납: ${rental.returnStationName}',
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey[800],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Icon(
                       Icons.calendar_today_outlined,
                       size: 20,
                       color: Colors.grey[600],
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '대여: ${rental.createdAt.toString().substring(0, 16)}',
+                      '대여 시작: ${rental.startTime.toString().substring(0, 16)}',
                       style: TextStyle(
                         fontSize: 15,
                         color: Colors.grey[800],
@@ -248,13 +205,13 @@ class _RentalHistoryViewState extends State<RentalHistoryView> {
                 Row(
                   children: [
                     Icon(
-                      Icons.calendar_today_outlined,
+                      Icons.timer_outlined,
                       size: 20,
                       color: Colors.grey[600],
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '반납: ${rental.updatedAt.toString().substring(0, 16)}',
+                      '반납 예정: ${rental.expectedReturnTime.toString().substring(0, 16)}',
                       style: TextStyle(
                         fontSize: 15,
                         color: Colors.grey[800],
@@ -266,17 +223,16 @@ class _RentalHistoryViewState extends State<RentalHistoryView> {
                 Row(
                   children: [
                     Icon(
-                      Icons.payment_outlined,
+                      Icons.timer_outlined,
                       size: 20,
                       color: Colors.grey[600],
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '${rental.totalPrice}원',
+                      '대여 시간: ${rental.rentalTimeHour}시간',
                       style: TextStyle(
                         fontSize: 15,
                         color: Colors.grey[800],
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -284,143 +240,6 @@ class _RentalHistoryViewState extends State<RentalHistoryView> {
               ],
             ),
           ),
-          if (rental.isOverdue)
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.05),
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(16),
-                  bottomRight: Radius.circular(16),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.warning_amber_rounded,
-                        color: Colors.red[700],
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '연체 정보',
-                        style: TextStyle(
-                          color: Colors.red[700],
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.timer_outlined,
-                        size: 20,
-                        color: Colors.red[700],
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '연체 시간: ${rental.overdueDuration.inHours}시간',
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.red[700],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.payment_outlined,
-                        size: 20,
-                        color: Colors.red[700],
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '연체료: ${rental.overdueFee}원',
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.red[700],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('준비 중인 기능입니다.'),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: AppColors.primary,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: BorderSide(
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          ),
-                          child: const Text(
-                            '연장하기',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('준비 중인 기능입니다.'),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            '연체료 결제',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
         ],
       ),
     );

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../../app/routes.dart';
@@ -28,19 +27,12 @@ class ApiService {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          print('인터셉터 - 요청 전:');
-          print('URL: ${options.path}');
-          print('Headers before: ${options.headers}');
-
           // 액세스 토큰이 있으면 헤더에 추가
           final accessToken = await TokenService.instance.getAccessToken();
-          print('가져온 액세스 토큰: $accessToken');
 
           if (accessToken != null && accessToken.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $accessToken';
-            print('토큰 추가됨');
           } else {
-            print('토큰이 null이거나 비어있음');
             // 토큰이 없으면 로그인 페이지로 이동
             _navigateToLogin();
             return handler.reject(
@@ -51,7 +43,6 @@ class ApiService {
             );
           }
 
-          print('Headers after: ${options.headers}');
           return handler.next(options);
         },
         onError: (DioException error, handler) async {
@@ -155,13 +146,7 @@ class ApiService {
   // PATCH 요청
   Future<Response> patch(String path, {dynamic data}) async {
     try {
-      print('ApiService PATCH 요청:');
-      print('URL: $_baseUrl$path');
-      print('Data: $data');
-
       final response = await _dio.patch(path, data: data);
-      print('응답 상태 코드: ${response.statusCode}');
-      print('응답 데이터: ${response.data}');
       return response;
     } on DioException {
       rethrow;

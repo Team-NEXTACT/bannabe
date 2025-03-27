@@ -55,14 +55,14 @@ class PaymentCompleteView extends StatelessWidget {
                             color: Colors.black54,
                           ),
                         ),
-                        Text(
-                          '${rental.totalPrice}원',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
-                          ),
-                        ),
+                        // Text(
+                        //   '${rental.totalPrice}원',
+                        //   style: const TextStyle(
+                        //     fontSize: 20,
+                        //     fontWeight: FontWeight.bold,
+                        //     color: AppColors.primary,
+                        //   ),
+                        // ),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -72,7 +72,7 @@ class PaymentCompleteView extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('대여 상품'),
-                        Text(rental.accessoryName),
+                        Text(rental.name),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -80,15 +80,15 @@ class PaymentCompleteView extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text('대여 시간'),
-                        Text('${rental.totalRentalTime.inHours}시간'),
+                        Text('${rental.rentalTimeHour}시간'),
                       ],
                     ),
                     const SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('대여 장소'),
-                        Text(rental.stationName),
+                        const Text('대여 기간'),
+                        Text(rental.formattedRentalTime),
                       ],
                     ),
                   ],

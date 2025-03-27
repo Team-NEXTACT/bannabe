@@ -23,8 +23,8 @@ import 'features/payment/views/payment_complete_view.dart';
 import 'features/payment/views/payment_view.dart';
 import 'features/rental/views/rental_view.dart';
 import 'features/rental/views/rental_detail_view.dart';
-import 'features/rental/views/rental_status_view.dart';
 import 'features/rental/views/rental_history_view.dart';
+import 'features/rental/views/active_rentals_view.dart';
 import 'data/models/station.dart';
 
 void main() async {
@@ -98,7 +98,7 @@ class MyApp extends StatelessWidget {
             station: args['station'] as Station?,
           );
         },
-        Routes.rentalStatus: (context) => const RentalStatusView(),
+        Routes.rentalStatus: (context) => const ActiveRentalsView(),
         Routes.rentalHistory: (context) => const RentalHistoryView(),
         Routes.payment: (context) => PaymentView(
               rental: ModalRoute.of(context)!.settings.arguments as Rental,
