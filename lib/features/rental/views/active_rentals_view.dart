@@ -134,7 +134,7 @@ class _ActiveRentalsViewState extends State<ActiveRentalsView> {
                   children: [
                     Expanded(
                       child: Text(
-                        rental.accessoryName,
+                        rental.name,
                         style: AppTheme.titleMedium.copyWith(
                           fontSize: 18,
                         ),
@@ -159,7 +159,7 @@ class _ActiveRentalsViewState extends State<ActiveRentalsView> {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            '대여 중',
+                            rental.status,
                             style: TextStyle(
                               color: AppColors.primary,
                               fontSize: 14,
@@ -175,31 +175,13 @@ class _ActiveRentalsViewState extends State<ActiveRentalsView> {
                 Row(
                   children: [
                     Icon(
-                      Icons.location_on_outlined,
-                      size: 20,
-                      color: Colors.grey[600],
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      rental.stationName,
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.grey[800],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Icon(
                       Icons.calendar_today_outlined,
                       size: 20,
                       color: Colors.grey[600],
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      rental.createdAt.toString().substring(0, 16),
+                      '대여 시작: ${rental.startTime.toString().substring(0, 16)}',
                       style: TextStyle(
                         fontSize: 15,
                         color: Colors.grey[800],
@@ -217,7 +199,7 @@ class _ActiveRentalsViewState extends State<ActiveRentalsView> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      rental.formattedRentalTime,
+                      '반납 예정: ${rental.expectedReturnTime.toString().substring(0, 16)}',
                       style: TextStyle(
                         fontSize: 15,
                         color: Colors.grey[800],
@@ -229,17 +211,17 @@ class _ActiveRentalsViewState extends State<ActiveRentalsView> {
                 Row(
                   children: [
                     Icon(
-                      Icons.payment_outlined,
+                      Icons.timer_outlined,
                       size: 20,
                       color: Colors.grey[600],
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '${rental.totalPrice}원',
+                      '남은 시간: ${rental.remainingTime.inHours}시간 ${rental.remainingTime.inMinutes % 60}분',
                       style: TextStyle(
                         fontSize: 15,
-                        color: Colors.grey[800],
-                        fontWeight: FontWeight.w500,
+                        color: rental.isOverdue ? Colors.red : Colors.grey[800],
+                        fontWeight: rental.isOverdue ? FontWeight.bold : null,
                       ),
                     ),
                   ],
@@ -269,9 +251,13 @@ class _ActiveRentalsViewState extends State<ActiveRentalsView> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary.withOpacity(0.1),
+                      backgroundColor: Colors.white,
                       foregroundColor: AppColors.primary,
                       elevation: 0,
+                      side: BorderSide(
+                        color: AppColors.primary.withOpacity(0.3),
+                        width: 1,
+                      ),
                       padding: const EdgeInsets.symmetric(
                         vertical: 12,
                       ),
@@ -288,6 +274,36 @@ class _ActiveRentalsViewState extends State<ActiveRentalsView> {
                     ),
                   ),
                 ),
+/*
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('준비 중인 기능입니다.')),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      '반납하기',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+*/
               ],
             ),
           ),

@@ -78,17 +78,15 @@ class _QRScanViewState extends State<QRScanView> {
                 // 디버깅용 스킵 버튼
                 TextButton(
                   onPressed: () {
+                    final now = DateTime.now();
                     final rental = Rental(
-                      id: 'rental-${DateTime.now().millisecondsSinceEpoch}',
-                      userId: 'test-user-id',
-                      accessoryId: 'powerbank-1',
-                      stationId: 'S1',
-                      accessoryName: '노트북용 보조배터리',
-                      stationName: '강남역점',
-                      totalPrice: 1000,
-                      status: RentalStatus.active,
-                      createdAt: DateTime.now(),
-                      updatedAt: DateTime.now(),
+                      name: '노트북용 보조배터리',
+                      status: '대여중',
+                      rentalTimeHour: widget.rentalDuration,
+                      startTime: now,
+                      expectedReturnTime:
+                          now.add(Duration(hours: widget.rentalDuration)),
+                      token: 'test_token',
                     );
 
                     Navigator.of(context).push(
