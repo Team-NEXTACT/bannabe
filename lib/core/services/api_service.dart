@@ -14,8 +14,9 @@ class ApiService {
     _dio = Dio(
       BaseOptions(
         baseUrl: _baseUrl,
-        connectTimeout: const Duration(seconds: 5),
-        receiveTimeout: const Duration(seconds: 10),
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        sendTimeout: const Duration(seconds: 30),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -27,6 +28,11 @@ class ApiService {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          // 스테이션 관련 API는 토큰 체크 스킵
+          if (options.path.startsWith('/stations')) {
+            return handler.next(options);
+          }
+
           // 액세스 토큰이 있으면 헤더에 추가
           final accessToken = await TokenService.instance.getAccessToken();
 
@@ -117,9 +123,9 @@ class ApiService {
   }
 
   // POST 요청
-  Future<Response> post(String path, {dynamic data}) async {
+  Future<Response> post(String path, {dynamic data, Options? options}) async {
     try {
-      return await _dio.post(path, data: data);
+      return await _dio.post(path, data: data, options: options);
     } on DioException {
       rethrow;
     }

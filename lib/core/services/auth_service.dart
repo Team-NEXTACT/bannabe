@@ -17,6 +17,15 @@ class AuthService with ChangeNotifier {
     connectTimeout: const Duration(seconds: 5),
     receiveTimeout: const Duration(seconds: 3),
   ));
+
+  // 사용자 관련 API를 위한 Dio 인스턴스
+  final Dio _userDio = Dio(BaseOptions(
+    baseUrl: "http://10.0.2.2:8080/v1",
+    connectTimeout: const Duration(seconds: 30),
+    receiveTimeout: const Duration(seconds: 30),
+    sendTimeout: const Duration(seconds: 30),
+  ));
+
   User? _currentUser;
 
   User? get currentUser => _currentUser;
@@ -297,5 +306,96 @@ class AuthService with ChangeNotifier {
   void updateCurrentUser(User user) {
     _currentUser = user;
     notifyListeners();
+  }
+
+  // 프로필 이미지 PreSigned URL 조회
+  Future<String> getProfileImagePreSignedUrl() async {
+    try {
+      print('[DEBUG] PreSigned URL 조회 시작');
+      final accessToken = await TokenService.instance.getAccessToken();
+      if (accessToken == null) {
+        throw Exception('인증 토큰이 없습니다.');
+      }
+
+      final response = await _userDio.get(
+        '/users/me/profile-image/pre-signed',
+        queryParameters: {
+          'extension': 'jpg',
+        },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $accessToken',
+          },
+        ),
+      );
+
+      print('[DEBUG] PreSigned URL 응답: ${response.data}');
+
+      if (response.statusCode == 200 && response.data != null) {
+        final responseData = response.data;
+        if (responseData['success'] == true && responseData['data'] != null) {
+          return responseData['data']['preSignedUrl'];
+        }
+      }
+      throw Exception('PreSigned URL 조회 실패');
+    } catch (e) {
+      print('[DEBUG] PreSigned URL 조회 에러: $e');
+      if (e is DioException) {
+        print('[DEBUG] 에러 응답: ${e.response?.data}');
+      }
+      throw 'PreSigned URL 조회 실패: ${e.toString()}';
+    }
+  }
+
+  // 프로필 이미지 업데이트
+  Future<void> updateProfileImage(String imageUrl) async {
+    try {
+      print('[DEBUG] 프로필 이미지 업데이트 시작');
+      final accessToken = await TokenService.instance.getAccessToken();
+      if (accessToken == null) {
+        throw Exception('인증 토큰이 없습니다.');
+      }
+
+      print('[DEBUG] 요청 데이터: {"imageUrl": "$imageUrl"}');
+
+      final response = await _userDio.patch(
+        '/users/me/profile-image',
+        data: {
+          'imageUrl': imageUrl,
+        },
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $accessToken',
+            'Content-Type': 'application/json',
+          },
+          validateStatus: (status) => status! < 500, // 500 에러만 캐치하도록 설정
+        ),
+      );
+
+      print('[DEBUG] 프로필 이미지 업데이트 응답: ${response.data}');
+
+      if (response.statusCode == 200 && response.data != null) {
+        final responseData = response.data;
+        if (responseData['success'] == true) {
+          // 성공 시 현재 사용자의 프로필 이미지 URL 업데이트
+          _currentUser = _currentUser?.copyWith(
+            profileImageUrl: imageUrl,
+          );
+          await StorageService.instance
+              .setObject('user', _currentUser!.toJson());
+          notifyListeners();
+          return; // 성공 시 여기서 종료
+        }
+      }
+      throw Exception(
+          '프로필 이미지 업데이트 실패: ${response.data['message'] ?? '알 수 없는 오류'}');
+    } catch (e) {
+      print('[DEBUG] 프로필 이미지 업데이트 에러: $e');
+      if (e is DioException) {
+        print('[DEBUG] 에러 응답: ${e.response?.data}');
+        throw '프로필 이미지 업데이트 실패: ${e.response?.data['message'] ?? e.message}';
+      }
+      throw '프로필 이미지 업데이트 실패: ${e.toString()}';
+    }
   }
 }
