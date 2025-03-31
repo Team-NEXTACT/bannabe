@@ -114,9 +114,10 @@ class ApiService {
 
   // GET 요청
   Future<Response> get(String path,
-      {Map<String, dynamic>? queryParameters}) async {
+      {Map<String, dynamic>? queryParameters, Options? options}) async {
     try {
-      return await _dio.get(path, queryParameters: queryParameters);
+      return await _dio.get(path,
+          queryParameters: queryParameters, options: options);
     } on DioException {
       rethrow;
     }

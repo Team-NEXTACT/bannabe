@@ -3,13 +3,16 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_theme.dart';
 import '../../../data/models/rental.dart';
 import '../../../app/routes.dart';
+import '../viewmodels/qr_scan_viewmodel.dart';
 
 class RentalDurationView extends StatefulWidget {
   final Rental rental;
+  final RentalItemResponse? rentalItemResponse;
 
   const RentalDurationView({
     Key? key,
     required this.rental,
+    this.rentalItemResponse,
   }) : super(key: key);
 
   @override
@@ -18,6 +21,13 @@ class RentalDurationView extends StatefulWidget {
 
 class _RentalDurationViewState extends State<RentalDurationView> {
   int _selectedHours = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    // 초기 선택 시간을 rental의 시간으로 설정
+    _selectedHours = widget.rental.rentalTimeHour;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +70,7 @@ class _RentalDurationViewState extends State<RentalDurationView> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  '대여 시작: ${widget.rental.startTime.toString().substring(0, 16)}',
+                                  '대여 스테이션: ${widget.rentalItemResponse?.currentStationName ?? "알 수 없음"}',
                                   style: const TextStyle(
                                     fontSize: 16,
                                     color: Colors.black87,
@@ -196,7 +206,7 @@ class _RentalDurationViewState extends State<RentalDurationView> {
                                 ),
                               ),
                               Text(
-                                '1000원',
+                                '${widget.rentalItemResponse?.price ?? 1000}원',
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
@@ -219,7 +229,7 @@ class _RentalDurationViewState extends State<RentalDurationView> {
                                 ),
                               ),
                               Text(
-                                '${1000 * _selectedHours}원',
+                                '${(widget.rentalItemResponse?.price ?? 1000) * _selectedHours}원',
                                 style: TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
