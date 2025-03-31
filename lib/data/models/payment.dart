@@ -84,3 +84,43 @@ class Payment {
     );
   }
 }
+
+class PaymentCalculateRequest {
+  final String rentalItemToken;
+  final int rentalTime;
+
+  PaymentCalculateRequest({
+    required this.rentalItemToken,
+    required this.rentalTime,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'rentalItemToken': rentalItemToken,
+      'rentalTime': rentalTime,
+    };
+  }
+}
+
+class PaymentCalculateResponse {
+  final String rentalItemToken;
+  final int pricePerHour;
+  final int rentalTime;
+  final int amount;
+
+  PaymentCalculateResponse({
+    required this.rentalItemToken,
+    required this.pricePerHour,
+    required this.rentalTime,
+    required this.amount,
+  });
+
+  factory PaymentCalculateResponse.fromJson(Map<String, dynamic> json) {
+    return PaymentCalculateResponse(
+      rentalItemToken: json['rentalItemToken'] as String,
+      pricePerHour: json['pricePerHour'] as int,
+      rentalTime: json['rentalTime'] as int,
+      amount: json['amount'] as int,
+    );
+  }
+}

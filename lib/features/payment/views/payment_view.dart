@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_theme.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/services/storage_service.dart';
 import '../../../data/models/rental.dart';
+import '../../../data/models/payment.dart';
 import '../../../app/routes.dart';
+import '../../rental/viewmodels/qr_scan_viewmodel.dart';
 
 class PaymentView extends StatefulWidget {
-  final Rental rental;
+  final Map<String, dynamic> arguments;
 
   const PaymentView({
     super.key,
-    required this.rental,
+    required this.arguments,
   });
 
   @override
@@ -19,34 +20,19 @@ class PaymentView extends StatefulWidget {
 }
 
 class _PaymentViewState extends State<PaymentView> {
-  String? accessoryName;
-  String? stationName;
-  int? hours;
-  int? totalPrice;
+  late final Rental rental;
+  late final PaymentCalculateResponse paymentCalculation;
+  late final RentalItemResponse? rentalItemResponse;
   bool agreedToTerms = false;
 
   @override
   void initState() {
     super.initState();
-    _loadSavedInfo();
-  }
-
-  Future<void> _loadSavedInfo() async {
-    final storage = StorageService.instance;
-    final savedAccessoryName =
-        await storage.getString('selected_accessory_name');
-    final savedStationName = await storage.getString('selected_station_name');
-    final savedHours = await storage.getInt('selected_rental_duration');
-    final savedPrice = await storage.getInt('selected_price');
-
-    if (mounted) {
-      setState(() {
-        accessoryName = savedAccessoryName;
-        stationName = savedStationName;
-        hours = savedHours;
-        totalPrice = savedPrice;
-      });
-    }
+    rental = widget.arguments['rental'] as Rental;
+    paymentCalculation =
+        widget.arguments['paymentCalculation'] as PaymentCalculateResponse;
+    rentalItemResponse =
+        widget.arguments['rentalItemResponse'] as RentalItemResponse?;
   }
 
   Future<void> _launchKakaoPayLink() async {
@@ -71,7 +57,6 @@ class _PaymentViewState extends State<PaymentView> {
           return;
         }
 
-        // 결제 완료 여부를 확인하기 위해 결제 상태를 주기적으로 체크
         if (mounted) {
           showDialog(
             context: context,
@@ -108,7 +93,7 @@ class _PaymentViewState extends State<PaymentView> {
                       child: Column(
                         children: [
                           Text(
-                            '${1000 * widget.rental.rentalTimeHour}원',
+                            '${paymentCalculation.amount}원',
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -116,7 +101,7 @@ class _PaymentViewState extends State<PaymentView> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '${widget.rental.name} (${widget.rental.rentalTimeHour}시간)',
+                            '${rental.name} (${paymentCalculation.rentalTime}시간)',
                             style: const TextStyle(
                               color: Colors.black54,
                             ),
@@ -166,7 +151,7 @@ class _PaymentViewState extends State<PaymentView> {
                               Navigator.of(context).pop();
                               Navigator.of(context).pushReplacementNamed(
                                 Routes.paymentComplete,
-                                arguments: widget.rental,
+                                arguments: rental,
                               );
                             },
                             style: ElevatedButton.styleFrom(
@@ -259,7 +244,7 @@ class _PaymentViewState extends State<PaymentView> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   const Text('상품'),
-                                  Text(widget.rental.name),
+                                  Text(rental.name),
                                 ],
                               ),
                               const SizedBox(height: 8),
@@ -267,21 +252,9 @@ class _PaymentViewState extends State<PaymentView> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text('대여 시작'),
-                                  Text(widget.rental.startTime
-                                      .toString()
-                                      .substring(0, 16)),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text('반납 예정'),
-                                  Text(widget.rental.expectedReturnTime
-                                      .toString()
-                                      .substring(0, 16)),
+                                  const Text('대여 스테이션'),
+                                  Text(rentalItemResponse?.currentStationName ??
+                                      '알 수 없음'),
                                 ],
                               ),
                               const SizedBox(height: 8),
@@ -290,7 +263,7 @@ class _PaymentViewState extends State<PaymentView> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   const Text('대여 시간'),
-                                  Text('${widget.rental.rentalTimeHour}시간'),
+                                  Text('${paymentCalculation.rentalTime}시간'),
                                 ],
                               ),
                               const SizedBox(height: 8),
@@ -299,7 +272,7 @@ class _PaymentViewState extends State<PaymentView> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   const Text('시간당 금액'),
-                                  Text('1000원'),
+                                  Text('${paymentCalculation.pricePerHour}원'),
                                 ],
                               ),
                               const SizedBox(height: 8),
@@ -317,7 +290,7 @@ class _PaymentViewState extends State<PaymentView> {
                                     ),
                                   ),
                                   Text(
-                                    '${1000 * widget.rental.rentalTimeHour}원',
+                                    '${paymentCalculation.amount}원',
                                     style: AppTheme.titleMedium.copyWith(
                                       color: AppColors.primary,
                                     ),
@@ -352,7 +325,6 @@ class _PaymentViewState extends State<PaymentView> {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      // 결제 금액 및 결제 수단 선택
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -373,7 +345,7 @@ class _PaymentViewState extends State<PaymentView> {
                                   ),
                                 ),
                                 Text(
-                                  '${1000 * widget.rental.rentalTimeHour}원',
+                                  '${paymentCalculation.amount}원',
                                   style: AppTheme.titleMedium.copyWith(
                                     color: AppColors.primary,
                                     fontWeight: FontWeight.bold,
@@ -382,7 +354,6 @@ class _PaymentViewState extends State<PaymentView> {
                               ],
                             ),
                             const SizedBox(height: 24),
-                            // 카드 결제 버튼
                             Opacity(
                               opacity: agreedToTerms ? 1.0 : 0.5,
                               child: ElevatedButton(

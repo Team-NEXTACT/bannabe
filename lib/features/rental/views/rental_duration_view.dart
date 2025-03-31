@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_theme.dart';
 import '../../../data/models/rental.dart';
+import '../../../data/models/payment.dart';
+import '../../../data/repositories/payment_repository.dart';
 import '../../../app/routes.dart';
 import '../viewmodels/qr_scan_viewmodel.dart';
 
@@ -21,12 +23,55 @@ class RentalDurationView extends StatefulWidget {
 
 class _RentalDurationViewState extends State<RentalDurationView> {
   int _selectedHours = 1;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     // 초기 선택 시간을 rental의 시간으로 설정
     _selectedHours = widget.rental.rentalTimeHour;
+  }
+
+  Future<void> _handlePaymentButtonTap() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final request = PaymentCalculateRequest(
+        rentalItemToken: widget.rental.token,
+        rentalTime: _selectedHours,
+      );
+
+      final response =
+          await PaymentRepository.instance.calculatePayment(request);
+
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed(
+          Routes.payment,
+          arguments: {
+            'rental': widget.rental,
+            'paymentCalculation': response,
+            'rentalItemResponse': widget.rentalItemResponse,
+          },
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -262,22 +307,7 @@ class _RentalDurationViewState extends State<RentalDurationView> {
               ),
               child: SafeArea(
                 child: ElevatedButton(
-                  onPressed: () {
-                    final updatedRental = Rental(
-                      name: widget.rental.name,
-                      status: widget.rental.status,
-                      rentalTimeHour: _selectedHours,
-                      startTime: widget.rental.startTime,
-                      expectedReturnTime: widget.rental.startTime
-                          .add(Duration(hours: _selectedHours)),
-                      token: widget.rental.token,
-                    );
-
-                    Navigator.of(context).pushReplacementNamed(
-                      Routes.payment,
-                      arguments: updatedRental,
-                    );
-                  },
+                  onPressed: _isLoading ? null : _handlePaymentButtonTap,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.black,
@@ -286,13 +316,23 @@ class _RentalDurationViewState extends State<RentalDurationView> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    '결제하기',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.black),
+                          ),
+                        )
+                      : const Text(
+                          '결제하기',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
               ),
             ),
