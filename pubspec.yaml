@@ -54,6 +54,7 @@ dependencies:
   # 이미지 선택
   image_picker: ^1.0.7
   flutter_svg: ^2.0.9
+  webview_flutter: ^4.7.0
 
 dev_dependencies:
   flutter_test:

@@ -11,6 +11,12 @@ enum PaymentStatus {
   refunded,
 }
 
+enum PaymentType {
+  RENT, // 대여 결제
+  OVERDUE, // 연체 결제
+  EXTENSION // 연장 결제
+}
+
 class Payment {
   final String id;
   final String userId;
@@ -121,6 +127,26 @@ class PaymentCalculateResponse {
       pricePerHour: json['pricePerHour'] as int,
       rentalTime: json['rentalTime'] as int,
       amount: json['amount'] as int,
+    );
+  }
+}
+
+class PaymentCheckoutUrlResponse {
+  final bool success;
+  final String message;
+  final String htmlContent;
+
+  PaymentCheckoutUrlResponse({
+    required this.success,
+    required this.message,
+    required this.htmlContent,
+  });
+
+  factory PaymentCheckoutUrlResponse.fromJson(Map<String, dynamic> json) {
+    return PaymentCheckoutUrlResponse(
+      success: json['success'] as bool,
+      message: json['message'] as String,
+      htmlContent: json['data'] as String,
     );
   }
 }

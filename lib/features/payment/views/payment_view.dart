@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:dio/dio.dart';
 import '../../../core/constants/app_theme.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/models/rental.dart';
 import '../../../data/models/payment.dart';
 import '../../../app/routes.dart';
+import '../../../core/services/token_service.dart';
 import '../../rental/viewmodels/qr_scan_viewmodel.dart';
+import '../../payment/views/payment_webview.dart';
+import '../../../data/services/payment_service.dart';
 
 class PaymentView extends StatefulWidget {
   final Map<String, dynamic> arguments;
@@ -23,6 +27,7 @@ class _PaymentViewState extends State<PaymentView> {
   late final Rental rental;
   late final PaymentCalculateResponse paymentCalculation;
   late final RentalItemResponse? rentalItemResponse;
+  late final PaymentService _paymentService;
   bool agreedToTerms = false;
 
   @override
@@ -33,6 +38,12 @@ class _PaymentViewState extends State<PaymentView> {
         widget.arguments['paymentCalculation'] as PaymentCalculateResponse;
     rentalItemResponse =
         widget.arguments['rentalItemResponse'] as RentalItemResponse?;
+    _paymentService = PaymentService(Dio(BaseOptions(
+      baseUrl: "http://10.0.2.2:8080/v1",
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+      sendTimeout: const Duration(seconds: 30),
+    )));
   }
 
   Future<void> _launchKakaoPayLink() async {
@@ -200,6 +211,60 @@ class _PaymentViewState extends State<PaymentView> {
     }
   }
 
+  Future<void> _startCardPayment() async {
+    try {
+      final accessToken = await TokenService.instance.getAccessToken();
+      if (accessToken == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('로그인이 필요합니다.'),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+        return;
+      }
+
+      // 결제창 호출 API 호출
+      final response = await _paymentService.createCheckout(
+        rentalItemToken: rental.token,
+        rentalTime: paymentCalculation.rentalTime,
+        amount: paymentCalculation.amount,
+        paymentType: PaymentType.RENT,
+        orderName: rental.name,
+      );
+
+      if (!mounted) return;
+
+      final result = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (context) => PaymentWebView(
+            checkoutUrl: response.htmlContent,
+            accessToken: accessToken,
+            paymentService: _paymentService,
+          ),
+        ),
+      );
+
+      if (result == true && mounted) {
+        Navigator.of(context).pushReplacementNamed(
+          Routes.paymentComplete,
+          arguments: rental,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('결제 시작 중 오류가 발생했습니다: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
   void _handlePaymentButtonTap() {
     if (!agreedToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -357,12 +422,8 @@ class _PaymentViewState extends State<PaymentView> {
                             Opacity(
                               opacity: agreedToTerms ? 1.0 : 0.5,
                               child: ElevatedButton(
-                                onPressed: agreedToTerms
-                                    ? () {
-                                        // TODO: 카드 결제 구현
-                                        print('카드 결제 버튼 클릭');
-                                      }
-                                    : null,
+                                onPressed:
+                                    agreedToTerms ? _startCardPayment : null,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
                                   foregroundColor: Colors.black,
