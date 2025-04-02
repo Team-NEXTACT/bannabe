@@ -135,11 +135,15 @@ class PaymentCheckoutUrlResponse {
   final bool success;
   final String message;
   final String htmlContent;
+  final String orderId;
+  final String customerKey;
 
   PaymentCheckoutUrlResponse({
     required this.success,
     required this.message,
     required this.htmlContent,
+    required this.orderId,
+    required this.customerKey,
   });
 
   factory PaymentCheckoutUrlResponse.fromJson(Map<String, dynamic> json) {
@@ -147,6 +151,8 @@ class PaymentCheckoutUrlResponse {
       success: json['success'] as bool,
       message: json['message'] as String,
       htmlContent: json['data'] as String,
+      orderId: json['orderId'] as String,
+      customerKey: json['customerKey'] as String,
     );
   }
 }

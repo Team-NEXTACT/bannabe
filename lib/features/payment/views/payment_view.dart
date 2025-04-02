@@ -243,6 +243,10 @@ class _PaymentViewState extends State<PaymentView> {
             checkoutUrl: response.htmlContent,
             accessToken: accessToken,
             paymentService: _paymentService,
+            orderId: response.orderId,
+            orderName: rental.name,
+            amount: paymentCalculation.amount,
+            customerKey: response.customerKey,
           ),
         ),
       );

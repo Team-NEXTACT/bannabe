@@ -10,36 +10,6 @@ class PaymentService {
     _dio.options.baseUrl = "http://10.0.2.2:8080";
   }
 
-  Future<PaymentCheckoutUrlResponse> getCheckoutUrl() async {
-    try {
-      final accessToken = await TokenService.instance.getAccessToken();
-      if (accessToken == null) {
-        throw Exception('로그인이 필요합니다.');
-      }
-
-      final response = await _dio.get(
-        '/v1/payments/checkout-url',
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $accessToken',
-          },
-        ),
-      );
-
-      // localhost를 10.0.2.2로 변경
-      final data = response.data;
-      if (data['data'] != null && data['data']['checkoutUrl'] != null) {
-        data['data']['checkoutUrl'] = data['data']['checkoutUrl']
-            .toString()
-            .replaceAll('localhost', '10.0.2.2');
-      }
-
-      return PaymentCheckoutUrlResponse.fromJson(data);
-    } catch (e) {
-      throw Exception('결제 URL을 가져오는데 실패했습니다: $e');
-    }
-  }
-
   Future<PaymentCheckoutUrlResponse> createCheckout({
     required String rentalItemToken,
     required int rentalTime,
@@ -104,6 +74,8 @@ class PaymentService {
         success: true,
         message: '성공',
         htmlContent: htmlContent,
+        orderId: orderId,
+        customerKey: customerKey,
       );
     } catch (e) {
       print('[ERROR] 결제창 호출 중 오류가 발생했습니다: $e');

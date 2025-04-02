@@ -6,12 +6,20 @@ class PaymentWebView extends StatefulWidget {
   final String checkoutUrl; // HTML 컨텐츠
   final String accessToken;
   final PaymentService paymentService;
+  final String orderId;
+  final String orderName;
+  final int amount;
+  final String customerKey;
 
   const PaymentWebView({
     super.key,
     required this.checkoutUrl,
     required this.accessToken,
     required this.paymentService,
+    required this.orderId,
+    required this.orderName,
+    required this.amount,
+    required this.customerKey,
   });
 
   @override
@@ -71,14 +79,30 @@ class _PaymentWebViewState extends State<PaymentWebView> {
         '''async function requestPayment() {
         const successUrl = "https://docs.tosspayments.com/guides/payment/test-success";
         const failUrl = "https://docs.tosspayments.com/guides/payment/test-fail";
-        await payment.requestPayment({
-          method: 'CARD',
-          amount,
-          orderId: "ORD_202504010503OavGrL",
-          orderName: "노트북 고출력 충전기/2시간",
-          successUrl,
-          failUrl
-        });''');
+
+        // View Model 데이터 선언
+        const clientKey = "test_ck_PBal2vxj81yE5wYp9vqk85RQgOAN";
+        const customerKey = "${widget.customerKey}";
+        const orderId = "${widget.orderId}";
+        const orderName = "${widget.orderName}";
+
+        try {
+          const tossPayments = TossPayments(clientKey);
+          const paymentWidget = tossPayments.payment({
+            customerKey: customerKey
+          });
+
+          await paymentWidget.requestPayment({
+            method: "CARD",
+            amount,
+            orderId: orderId,
+            orderName: orderName,
+            successUrl: successUrl,
+            failUrl: failUrl
+          });
+        } catch (error) {
+          console.error('결제 요청 실패:', error);
+        }''');
     print('[DEBUG] 결제창 설정 변경 후 HTML 길이: ${modifiedHtml.length}');
 
     // HTML이 완전한지 확인
