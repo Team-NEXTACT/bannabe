@@ -147,8 +147,8 @@ class _EditProfileViewState extends State<EditProfileView> {
         _success = null;
       });
 
-      // 프로필 이미지 업데이트 (null로 설정)
-      await AuthService.instance.updateProfileImage('');
+      // 프로필 이미지를 기본 이미지로 변경
+      await AuthService.instance.resetProfileImage();
 
       setState(() {
         _success = '프로필 이미지가 삭제되었습니다.';

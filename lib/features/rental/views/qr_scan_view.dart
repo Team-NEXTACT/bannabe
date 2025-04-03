@@ -75,43 +75,6 @@ class _QRScanViewState extends State<QRScanView> {
             appBar: AppBar(
               title: Text(widget.isReturn ? 'QR 스캔하여 반납' : 'QR 스캔하여 대여'),
               centerTitle: true,
-              actions: [
-                // 디버깅용 스킵 버튼
-                TextButton(
-                  onPressed: () {
-                    final now = DateTime.now();
-                    final rental = Rental(
-                      name: '노트북용 보조배터리',
-                      status: '대여중',
-                      rentalTimeHour: widget.rentalDuration,
-                      startTime: now,
-                      expectedReturnTime:
-                          now.add(Duration(hours: widget.rentalDuration)),
-                      token: 'test_token',
-                    );
-
-                    // 테스트용 RentalItemResponse 생성
-                    final rentalItemResponse = RentalItemResponse(
-                      name: '노트북용 보조배터리',
-                      price: 1000,
-                      currentStationName: '테스트 스테이션',
-                    );
-
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => RentalDurationView(
-                          rental: rental,
-                          rentalItemResponse: rentalItemResponse,
-                        ),
-                      ),
-                    );
-                  },
-                  child: const Text(
-                    '[DEV] 스킵',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ),
-              ],
             ),
             body: Builder(
               builder: (context) {

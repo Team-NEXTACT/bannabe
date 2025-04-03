@@ -201,29 +201,57 @@ class AuthService with ChangeNotifier {
   // 사용자 정보 가져오기
   Future<void> fetchUserProfile() async {
     try {
-      final response = await _dio.get('/profile');
+      print('[DEBUG] 사용자 정보 가져오기 시작');
+      final accessToken = await TokenService.instance.getAccessToken();
+      if (accessToken == null) {
+        throw Exception('인증 토큰이 없습니다.');
+      }
+
+      final response = await _userDio.get(
+        '/users/me',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $accessToken',
+          },
+          validateStatus: (status) => status! < 500,
+        ),
+      );
+
+      print('[DEBUG] 사용자 정보 응답: ${response.data}');
 
       if (response.statusCode == 200 && response.data != null) {
-        final userData = response.data;
+        final responseData = response.data;
+        if (responseData['success'] == true && responseData['data'] != null) {
+          final userData = responseData['data'];
 
-        _currentUser = User(
-          id: userData['id'] ?? '',
-          email: userData['email'] ?? '',
-          nickname: userData['nickname'],
-          profileImageUrl: userData['profileImage'],
-          createdAt: userData['createdAt'] != null
-              ? DateTime.parse(userData['createdAt'])
-              : null,
-          updatedAt: userData['updatedAt'] != null
-              ? DateTime.parse(userData['updatedAt'])
-              : null,
-        );
+          _currentUser = User(
+            id: userData['id'] ?? '',
+            email: userData['email'] ?? '',
+            nickname: userData['nickname'],
+            profileImageUrl: userData['profileImage'],
+            createdAt: userData['createdAt'] != null
+                ? DateTime.parse(userData['createdAt'])
+                : null,
+            updatedAt: userData['updatedAt'] != null
+                ? DateTime.parse(userData['updatedAt'])
+                : null,
+          );
 
-        await StorageService.instance.setObject('user', _currentUser!.toJson());
-        notifyListeners();
+          await StorageService.instance
+              .setObject('user', _currentUser!.toJson());
+          notifyListeners();
+          return;
+        }
       }
+      throw Exception(
+          '사용자 정보 가져오기 실패: ${response.data['message'] ?? '알 수 없는 오류'}');
     } catch (e) {
-      print('사용자 정보 가져오기 실패: ${e.toString()}');
+      print('[DEBUG] 사용자 정보 가져오기 에러: $e');
+      if (e is DioException) {
+        print('[DEBUG] 에러 응답: ${e.response?.data}');
+        throw '사용자 정보 가져오기 실패: ${e.response?.data['message'] ?? e.message}';
+      }
+      throw '사용자 정보 가져오기 실패: ${e.toString()}';
     }
   }
 
@@ -396,6 +424,46 @@ class AuthService with ChangeNotifier {
         throw '프로필 이미지 업데이트 실패: ${e.response?.data['message'] ?? e.message}';
       }
       throw '프로필 이미지 업데이트 실패: ${e.toString()}';
+    }
+  }
+
+  Future<void> resetProfileImage() async {
+    try {
+      print('[DEBUG] 프로필 이미지 초기화 시작');
+      final accessToken = await TokenService.instance.getAccessToken();
+      if (accessToken == null) {
+        throw Exception('인증 토큰이 없습니다.');
+      }
+
+      final response = await _userDio.patch(
+        '/users/me/profile-image/default',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $accessToken',
+          },
+          validateStatus: (status) => status! < 500,
+        ),
+      );
+
+      print('[DEBUG] 프로필 이미지 초기화 응답: ${response.data}');
+
+      if (response.statusCode == 200 && response.data != null) {
+        final responseData = response.data;
+        if (responseData['success'] == true) {
+          // 사용자 정보 새로고침
+          await fetchUserProfile();
+          return;
+        }
+      }
+      throw Exception(
+          '프로필 이미지 초기화 실패: ${response.data['message'] ?? '알 수 없는 오류'}');
+    } catch (e) {
+      print('[DEBUG] 프로필 이미지 초기화 에러: $e');
+      if (e is DioException) {
+        print('[DEBUG] 에러 응답: ${e.response?.data}');
+        throw '프로필 이미지 초기화 실패: ${e.response?.data['message'] ?? e.message}';
+      }
+      throw '프로필 이미지 초기화 실패: ${e.toString()}';
     }
   }
 }
