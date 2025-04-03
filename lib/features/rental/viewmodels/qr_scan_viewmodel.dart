@@ -3,6 +3,28 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../../data/models/rental.dart';
 import '../../../data/repositories/accessory_repository.dart';
 import '../../../data/repositories/station_repository.dart';
+import '../../../core/services/api_service.dart';
+import 'package:dio/dio.dart';
+
+class RentalItemResponse {
+  final String name;
+  final int price;
+  final String currentStationName;
+
+  RentalItemResponse({
+    required this.name,
+    required this.price,
+    required this.currentStationName,
+  });
+
+  factory RentalItemResponse.fromJson(Map<String, dynamic> json) {
+    return RentalItemResponse(
+      name: json['name'] as String,
+      price: json['price'] as int,
+      currentStationName: json['currentStationName'] as String,
+    );
+  }
+}
 
 class QRScanViewModel extends ChangeNotifier {
   final AccessoryRepository _accessoryRepository;
@@ -16,6 +38,7 @@ class QRScanViewModel extends ChangeNotifier {
   bool _isReturnComplete = false;
   int _rating = 0;
   final _stationRepository = StationRepository.instance;
+  RentalItemResponse? _rentalItemResponse;
 
   QRScanViewModel({
     AccessoryRepository? accessoryRepository,
@@ -33,6 +56,7 @@ class QRScanViewModel extends ChangeNotifier {
   Rental? get rental => _rental;
   bool get isReturnComplete => _isReturnComplete;
   int get rating => _rating;
+  RentalItemResponse? get rentalItemResponse => _rentalItemResponse;
 
   Future<void> _checkCameraPermission() async {
     final status = await Permission.camera.status;
@@ -62,38 +86,41 @@ class QRScanViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // QR 코드에서 액세서리 ID와 스테이션 ID, 시간당 가격 추출
-      final parts = qrCode.split('_');
-      if (parts.length != 3) {
-        throw Exception('잘못된 QR 코드입니다.');
+      // QR 코드에서 URL 확인
+      if (!qrCode.startsWith('https://api.bannabe.io/rentals/')) {
+        throw Exception('유효하지 않은 QR 코드입니다.');
       }
 
-      final scannedStationId = parts[0];
-      final scannedAccessoryId = parts[1];
-      final pricePerHour = int.parse(parts[2]);
+      // URL에서 토큰 추출
+      final rentalItemToken = qrCode.split('/').last;
 
-      // 액세서리와 스테이션 정보 조회
-      final accessory = await _accessoryRepository.get(scannedAccessoryId);
-      final station =
-          await _stationRepository.getStation(int.parse(scannedStationId));
-
-      if (!accessory.isAvailable) {
-        throw Exception('현재 대여할 수 없는 물품입니다.');
-      }
-
-      if (station == null) {
-        throw Exception('스테이션 정보를 찾을 수 없습니다.');
-      }
-
-      final now = DateTime.now();
-      _rental = Rental(
-        name: accessory.name,
-        status: '대여중',
-        rentalTimeHour: _rentalDuration,
-        startTime: now,
-        expectedReturnTime: now.add(Duration(hours: _rentalDuration)),
-        token: qrCode,
+      // API 호출 시 validateStatus 추가
+      final response = await ApiService.instance.get(
+        '/rentals/$rentalItemToken',
+        options: Options(validateStatus: (status) => status! < 500),
       );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final responseData = response.data;
+        if (responseData['success'] == true && responseData['data'] != null) {
+          _rentalItemResponse =
+              RentalItemResponse.fromJson(responseData['data']);
+
+          final now = DateTime.now();
+          _rental = Rental(
+            name: _rentalItemResponse!.name,
+            status: '대여중',
+            rentalTimeHour: _rentalDuration,
+            startTime: now,
+            expectedReturnTime: now.add(Duration(hours: _rentalDuration)),
+            token: rentalItemToken,
+          );
+        } else {
+          throw Exception('대여 정보를 가져오는데 실패했습니다.');
+        }
+      } else {
+        throw Exception('서버 응답 오류: ${response.statusCode}');
+      }
     } catch (e) {
       _error = e.toString();
     } finally {

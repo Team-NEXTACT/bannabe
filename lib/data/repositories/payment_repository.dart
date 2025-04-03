@@ -1,7 +1,13 @@
 import '../models/payment.dart';
 import 'base_repository.dart';
+import '../../core/services/api_service.dart';
 
 class PaymentRepository implements BaseRepository<Payment> {
+  static final PaymentRepository _instance = PaymentRepository._internal();
+  static PaymentRepository get instance => _instance;
+
+  PaymentRepository._internal();
+
   @override
   Future<Payment> get(String id) async {
     await Future.delayed(const Duration(seconds: 1));
@@ -100,5 +106,25 @@ class PaymentRepository implements BaseRepository<Payment> {
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
+  }
+
+  Future<PaymentCalculateResponse> calculatePayment(
+      PaymentCalculateRequest request) async {
+    try {
+      final response = await ApiService.instance.post(
+        '/payments/calculate',
+        data: request.toJson(),
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final responseData = response.data;
+        if (responseData['success'] == true && responseData['data'] != null) {
+          return PaymentCalculateResponse.fromJson(responseData['data']);
+        }
+      }
+      throw Exception('결제 금액 계산에 실패했습니다.');
+    } catch (e) {
+      throw '결제 금액 계산에 실패했습니다: ${e.toString()}';
+    }
   }
 }

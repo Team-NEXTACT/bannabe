@@ -101,7 +101,8 @@ class MyApp extends StatelessWidget {
         Routes.rentalStatus: (context) => const ActiveRentalsView(),
         Routes.rentalHistory: (context) => const RentalHistoryView(),
         Routes.payment: (context) => PaymentView(
-              rental: ModalRoute.of(context)!.settings.arguments as Rental,
+              arguments: ModalRoute.of(context)!.settings.arguments
+                  as Map<String, dynamic>,
             ),
         Routes.paymentComplete: (context) => PaymentCompleteView(
               rental: ModalRoute.of(context)!.settings.arguments as Rental,

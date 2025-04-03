@@ -63,6 +63,7 @@ class _QRScanViewState extends State<QRScanView> {
                   MaterialPageRoute(
                     builder: (context) => RentalDurationView(
                       rental: viewModel.rental!,
+                      rentalItemResponse: viewModel.rentalItemResponse,
                     ),
                   ),
                 );
@@ -89,10 +90,18 @@ class _QRScanViewState extends State<QRScanView> {
                       token: 'test_token',
                     );
 
+                    // 테스트용 RentalItemResponse 생성
+                    final rentalItemResponse = RentalItemResponse(
+                      name: '노트북용 보조배터리',
+                      price: 1000,
+                      currentStationName: '테스트 스테이션',
+                    );
+
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => RentalDurationView(
                           rental: rental,
+                          rentalItemResponse: rentalItemResponse,
                         ),
                       ),
                     );
