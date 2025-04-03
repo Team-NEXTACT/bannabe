@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../app/routes.dart';
-import '../services/auth_service.dart';
 import '../../features/rental/views/qr_scan_view.dart';
+import '../services/token_service.dart';
 
 class AppBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
@@ -36,10 +36,11 @@ class AppBottomNavigationBar extends StatelessWidget {
             );
             break;
           case 3:
-            if (AuthService.instance.isAuthenticated) {
-              Navigator.of(context).pushReplacementNamed(Routes.mypage);
-            } else {
+            final hasToken = await TokenService.instance.hasAccessToken();
+            if (!hasToken) {
               Navigator.of(context).pushReplacementNamed(Routes.login);
+            } else {
+              Navigator.of(context).pushReplacementNamed(Routes.mypage);
             }
             break;
         }
