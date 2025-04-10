@@ -7,7 +7,6 @@ import 'core/constants/app_colors.dart';
 import 'core/services/auth_service.dart';
 import 'core/services/api_service.dart';
 import 'data/models/rental.dart';
-import 'data/models/accessory.dart';
 import 'features/auth/views/login_view.dart';
 import 'features/auth/views/signup_complete_view.dart';
 import 'features/auth/views/signup_view.dart';
