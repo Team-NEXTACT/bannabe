@@ -38,7 +38,10 @@ class AppBottomNavigationBar extends StatelessWidget {
           case 3:
             final hasToken = await TokenService.instance.hasAccessToken();
             if (!hasToken) {
-              Navigator.of(context).pushReplacementNamed(Routes.login);
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                Routes.login,
+                (route) => false,
+              );
             } else {
               Navigator.of(context).pushReplacementNamed(Routes.mypage);
             }

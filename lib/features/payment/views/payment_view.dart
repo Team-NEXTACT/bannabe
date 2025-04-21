@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:dio/dio.dart';
 import '../../../core/constants/app_theme.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../data/models/rental.dart';
@@ -9,7 +8,6 @@ import '../../../app/routes.dart';
 import '../../../core/services/token_service.dart';
 import '../../rental/viewmodels/qr_scan_viewmodel.dart';
 import '../../payment/views/payment_webview.dart';
-import '../../../data/services/payment_service.dart';
 
 class PaymentView extends StatefulWidget {
   final Map<String, dynamic> arguments;
@@ -27,7 +25,6 @@ class _PaymentViewState extends State<PaymentView> {
   late final Rental rental;
   late final PaymentCalculateResponse paymentCalculation;
   late final RentalItemResponse? rentalItemResponse;
-  late final PaymentService _paymentService;
   bool agreedToTerms = false;
 
   @override
@@ -38,12 +35,6 @@ class _PaymentViewState extends State<PaymentView> {
         widget.arguments['paymentCalculation'] as PaymentCalculateResponse;
     rentalItemResponse =
         widget.arguments['rentalItemResponse'] as RentalItemResponse?;
-    _paymentService = PaymentService(Dio(BaseOptions(
-      baseUrl: "http://10.0.2.2:8080/v1",
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
-      sendTimeout: const Duration(seconds: 30),
-    )));
   }
 
   Future<void> _launchKakaoPayLink() async {
@@ -226,36 +217,35 @@ class _PaymentViewState extends State<PaymentView> {
         return;
       }
 
-      // 결제창 호출 API 호출
-      final response = await _paymentService.createCheckout(
-        rentalItemToken: rental.token,
-        rentalTime: paymentCalculation.rentalTime,
-        amount: paymentCalculation.amount,
-        paymentType: PaymentType.RENT,
-        orderName: rental.name,
-      );
-
-      if (!mounted) return;
-
-      final result = await Navigator.of(context).push<bool>(
+      final result = await Navigator.of(context).push<String>(
         MaterialPageRoute(
           builder: (context) => PaymentWebView(
-            checkoutUrl: response.htmlContent,
             accessToken: accessToken,
-            paymentService: _paymentService,
-            orderId: response.orderId,
-            orderName: rental.name,
-            amount: paymentCalculation.amount,
-            customerKey: response.customerKey,
+            rentalItemToken: rental.token,
+            rentalTime: paymentCalculation.rentalTime.toString(),
+            paymentType: 'RENT',
           ),
         ),
       );
 
-      if (result == true && mounted) {
-        Navigator.of(context).pushReplacementNamed(
-          Routes.paymentComplete,
-          arguments: rental,
-        );
+      if (result != null && mounted) {
+        print('결제 결과: $result');
+        if (result.startsWith('failure:')) {
+          // 결제 실패 처리
+          final message = result.substring(8);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(message),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        } else {
+          // 결제 성공 처리
+          Navigator.of(context).pushReplacementNamed(
+            Routes.paymentComplete,
+            arguments: result,
+          );
+        }
       }
     } catch (e) {
       if (mounted) {

@@ -7,7 +7,6 @@ import 'core/constants/app_colors.dart';
 import 'core/services/auth_service.dart';
 import 'core/services/api_service.dart';
 import 'data/models/rental.dart';
-import 'data/models/accessory.dart';
 import 'features/auth/views/login_view.dart';
 import 'features/auth/views/signup_complete_view.dart';
 import 'features/auth/views/signup_view.dart';
@@ -105,7 +104,8 @@ class MyApp extends StatelessWidget {
                   as Map<String, dynamic>,
             ),
         Routes.paymentComplete: (context) => PaymentCompleteView(
-              rental: ModalRoute.of(context)!.settings.arguments as Rental,
+              rentalHistoryToken:
+                  ModalRoute.of(context)!.settings.arguments as String,
             ),
         Routes.mypage: (context) => const MyPageView(),
         Routes.editProfile: (context) => const EditProfileView(),
