@@ -229,10 +229,23 @@ class _PaymentViewState extends State<PaymentView> {
       );
 
       if (result != null && mounted) {
-        Navigator.of(context).pushReplacementNamed(
-          Routes.paymentComplete,
-          arguments: rental,
-        );
+        print('결제 결과: $result');
+        if (result.startsWith('failure:')) {
+          // 결제 실패 처리
+          final message = result.substring(8);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(message),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        } else {
+          // 결제 성공 처리
+          Navigator.of(context).pushReplacementNamed(
+            Routes.paymentComplete,
+            arguments: result,
+          );
+        }
       }
     } catch (e) {
       if (mounted) {

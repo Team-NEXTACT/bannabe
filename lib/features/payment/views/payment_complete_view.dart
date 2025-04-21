@@ -1,17 +1,60 @@
+import 'package:bannabee/core/services/api_service.dart';
+import 'package:bannabee/core/services/token_service.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_theme.dart';
-import '../../../data/models/rental.dart';
 import '../../../app/routes.dart';
-import '../../../features/rental/views/active_rentals_view.dart';
+import '../../../data/models/rental_success_simple_response.dart';
 
-class PaymentCompleteView extends StatelessWidget {
-  final Rental rental;
+class PaymentCompleteView extends StatefulWidget {
+  final String rentalHistoryToken;
 
   const PaymentCompleteView({
     super.key,
-    required this.rental,
+    required this.rentalHistoryToken,
   });
+
+  @override
+  State<PaymentCompleteView> createState() => _PaymentCompleteViewState();
+}
+
+class _PaymentCompleteViewState extends State<PaymentCompleteView> {
+  late Future<RentalSuccessSimpleResponse> _rentalData;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _rentalData = _fetchRentalData();
+  }
+
+  Future<RentalSuccessSimpleResponse> _fetchRentalData() async {
+    try {
+      final accessToken = await TokenService.instance.getAccessToken();
+      if (accessToken == null) {
+        throw '로그인이 필요합니다.';
+      }
+
+      final response = await ApiService.instance.get(
+        '/rentals/success/${widget.rentalHistoryToken}',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $accessToken',
+          },
+          validateStatus: (status) => true,
+        ),
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        return RentalSuccessSimpleResponse.fromJson(response.data['data']);
+      } else {
+        throw '대여 데이터를 불러오는데 실패했습니다';
+      }
+    } catch (e) {
+      throw '대여 데이터를 불러오는 중 오류가 발생했습니다';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,62 +80,81 @@ class PaymentCompleteView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 40),
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              FutureBuilder<RentalSuccessSimpleResponse>(
+                future: _rentalData,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Text(
+                        '오류가 발생했습니다: ${snapshot.error}',
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    );
+                  } else if (!snapshot.hasData) {
+                    return const Center(child: Text('데이터가 없습니다'));
+                  }
+
+                  final rental = snapshot.data!;
+                  return Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
                       children: [
-                        const Text(
-                          '결제 금액',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.black54,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              '결제 금액',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.black54,
+                              ),
+                            ),
+                            Text(
+                              '${rental.amount}원',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ],
                         ),
-                        // Text(
-                        //   '${rental.totalPrice}원',
-                        //   style: const TextStyle(
-                        //     fontSize: 20,
-                        //     fontWeight: FontWeight.bold,
-                        //     color: AppColors.primary,
-                        //   ),
-                        // ),
+                        const SizedBox(height: 16),
+                        const Divider(),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('대여 상품'),
+                            Text(rental.itemName),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('대여 시간'),
+                            Text('${rental.rentalTime}시간'),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('대여 스테이션'),
+                            Text(rental.stationName),
+                          ],
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    const Divider(),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('대여 상품'),
-                        Text(rental.name),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('대여 시간'),
-                        Text('${rental.rentalTimeHour}시간'),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text('대여 기간'),
-                        Text(rental.formattedRentalTime),
-                      ],
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
               const Spacer(),
               Text(
@@ -124,13 +186,8 @@ class PaymentCompleteView extends StatelessWidget {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (context) => ActiveRentalsView(
-                              newRental: rental,
-                            ),
-                          ),
-                        );
+                        Navigator.of(context)
+                            .pushReplacementNamed(Routes.rentalStatus);
                       },
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
