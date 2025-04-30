@@ -106,7 +106,7 @@ class QRScanViewModel extends ChangeNotifier {
           throw Exception('대여 정보를 가져오는데 실패했습니다.');
         }
       } else {
-        throw Exception('서버 응답 오류: ${response.statusCode}');
+        throw response.data['message'] ?? '서버 응답 오류가 발생했습니다.';
       }
     } catch (e) {
       _error = e.toString();
