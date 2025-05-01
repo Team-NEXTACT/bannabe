@@ -152,8 +152,8 @@ class _QRScanViewState extends State<QRScanView> {
                           for (final barcode in barcodes) {
                             if (barcode.rawValue != null) {
                               if (widget.isReturn) {
-                                viewModel
-                                    .processReturnQRCode(barcode.rawValue!);
+                                viewModel.processReturnQRCode(
+                                    barcode.rawValue!, context);
                               } else {
                                 viewModel
                                     .processRentalQRCode(barcode.rawValue!);
@@ -218,7 +218,8 @@ class _QRScanViewState extends State<QRScanView> {
                         for (final barcode in barcodes) {
                           if (barcode.rawValue != null) {
                             if (widget.isReturn) {
-                              viewModel.processReturnQRCode(barcode.rawValue!);
+                              viewModel.processReturnQRCode(
+                                  barcode.rawValue!, context);
                             } else {
                               viewModel.processRentalQRCode(barcode.rawValue!);
                             }

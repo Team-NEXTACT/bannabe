@@ -301,6 +301,7 @@ class _RentalDetailViewState extends State<RentalDetailView> {
                                       builder: (context) => QRScanView(
                                         rentalDuration: _selectedHours,
                                         isReturn: false,
+                                        initialRental: _itemDetail,
                                       ),
                                     ),
                                   );
