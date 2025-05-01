@@ -9,6 +9,7 @@ import '../../../core/services/auth_service.dart';
 import 'change_nickname_view.dart';
 import 'change_password_view.dart';
 import 'bookmarked_stations_view.dart';
+import '../../rental/views/qr_scan_view.dart';
 
 class EditProfileView extends StatefulWidget {
   const EditProfileView({super.key});
@@ -227,6 +228,17 @@ class _EditProfileViewState extends State<EditProfileView> {
     );
   }
 
+  void _navigateToQRScanner() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const QRScanView(
+          rentalDuration: 0,
+          isReturn: true,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = AuthService.instance.currentUser;
@@ -408,6 +420,38 @@ class _EditProfileViewState extends State<EditProfileView> {
                           Icon(
                             Icons.arrow_forward_ios,
                             size: 16,
+                            color: Colors.grey[600],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // 5. 반납용 QR 스캐너 페이지로 이동하는 필드
+                  InkWell(
+                    onTap: _navigateToQRScanner,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppColors.lightGrey),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            '반납용 QR 스캐너',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Icon(
+                            Icons.qr_code_scanner,
+                            size: 24,
                             color: Colors.grey[600],
                           ),
                         ],
