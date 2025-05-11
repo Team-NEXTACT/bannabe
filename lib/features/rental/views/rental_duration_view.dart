@@ -28,8 +28,8 @@ class _RentalDurationViewState extends State<RentalDurationView> {
   @override
   void initState() {
     super.initState();
-    // 초기 선택 시간을 rental의 시간으로 설정
-    _selectedHours = widget.rental.rentalTimeHour;
+    _selectedHours =
+        widget.rental.rentalTimeHour > 0 ? widget.rental.rentalTimeHour : 1;
   }
 
   Future<void> _handlePaymentButtonTap() async {

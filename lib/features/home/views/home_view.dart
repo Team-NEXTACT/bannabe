@@ -233,7 +233,7 @@ class _HomeViewState extends State<HomeView> {
       },
       {
         'title': '멤버십 할인 이벤트',
-        'description': '월 99,900원으로 무제한 대여',
+        'description': '월 14,900원으로 무제한 대여',
         'image': 'assets/images/pc_smartphone_battery_juuden.png',
         'backgroundColor': '#FF6B6B',
       },

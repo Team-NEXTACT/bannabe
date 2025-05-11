@@ -3,9 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/qr_scan_viewmodel.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../app/routes.dart';
 import '../../../core/widgets/loading_animation.dart';
-import '../../../data/models/rental.dart';
 import './rental_duration_view.dart';
 
 class QRScanView extends StatefulWidget {
@@ -154,8 +152,8 @@ class _QRScanViewState extends State<QRScanView> {
                           for (final barcode in barcodes) {
                             if (barcode.rawValue != null) {
                               if (widget.isReturn) {
-                                viewModel
-                                    .processReturnQRCode(barcode.rawValue!);
+                                viewModel.processReturnQRCode(
+                                    barcode.rawValue!, context);
                               } else {
                                 viewModel
                                     .processRentalQRCode(barcode.rawValue!);
@@ -220,7 +218,8 @@ class _QRScanViewState extends State<QRScanView> {
                         for (final barcode in barcodes) {
                           if (barcode.rawValue != null) {
                             if (widget.isReturn) {
-                              viewModel.processReturnQRCode(barcode.rawValue!);
+                              viewModel.processReturnQRCode(
+                                  barcode.rawValue!, context);
                             } else {
                               viewModel.processRentalQRCode(barcode.rawValue!);
                             }
